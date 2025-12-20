@@ -1,40 +1,87 @@
 import { useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import axios from "axios";
+import Swal from "sweetalert2";
+import { AuthContext } from "../providers/AuthProvider";
 
 const DonationRequestDetails = () => {
   const { id } = useParams();
-  const [request, setRequest] = useState(null);
+  const { user } = useContext(AuthContext);
 
+  const [request, setRequest] = useState(null);
+  const [role, setRole] = useState(null);
+
+  // 🔹 load donation request
   useEffect(() => {
     axios
-      .get("http://localhost:5000/donation-requests")
-      .then(res => {
-        const found = res.data.find(r => r._id === id);
-        setRequest(found);
-      });
+      .get(`http://localhost:5000/donation-requests/${id}`)
+      .then(res => setRequest(res.data));
   }, [id]);
 
-  if (!request) {
-    return <p className="text-center mt-10">Loading...</p>;
-  }
+  // 🔹 load user role
+  useEffect(() => {
+    if (user?.email) {
+      axios
+        .get(`http://localhost:5000/users/role/${user.email}`)
+        .then(res => setRole(res.data.role));
+    }
+  }, [user]);
+
+  // 🔹 donate confirm
+  const handleDonate = async () => {
+    const confirm = await Swal.fire({
+      title: "Confirm Donation?",
+      text: "Are you sure you want to donate?",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Yes, Donate",
+    });
+
+    if (confirm.isConfirmed) {
+      await axios.patch(
+        `http://localhost:5000/donation-requests/status/${id}`,
+        {
+          donationStatus: "inprogress",
+          donorName: user.displayName,
+          donorEmail: user.email,
+        }
+      );
+
+      Swal.fire("Success", "Donation confirmed!", "success");
+
+      setRequest({ ...request, donationStatus: "inprogress" });
+    }
+  };
+
+  if (!request) return <p className="text-center mt-10">Loading...</p>;
 
   return (
-    <div className="max-w-3xl mx-auto p-6 bg-white shadow rounded">
+    <div className="max-w-3xl mx-auto bg-white p-6 rounded shadow">
       <h2 className="text-2xl font-bold mb-4">
         Donation Request Details
       </h2>
 
-      <p><strong>Recipient:</strong> {request.recipientName}</p>
-      <p><strong>Location:</strong> {request.district}, {request.upazila}</p>
-      <p><strong>Hospital:</strong> {request.hospitalName}</p>
-      <p><strong>Address:</strong> {request.address}</p>
-      <p><strong>Blood Group:</strong> {request.bloodGroup}</p>
-      <p><strong>Date:</strong> {request.donationDate}</p>
-      <p><strong>Time:</strong> {request.donationTime}</p>
-      <p className="mt-3">
-        <strong>Message:</strong> {request.requestMessage}
+      <p><b>Recipient Name:</b> {request.recipientName}</p>
+      <p><b>Location:</b> {request.district}, {request.upazila}</p>
+      <p><b>Hospital:</b> {request.hospitalName}</p>
+      <p><b>Address:</b> {request.address}</p>
+      <p><b>Blood Group:</b> {request.bloodGroup}</p>
+      <p><b>Date:</b> {request.donationDate}</p>
+      <p><b>Time:</b> {request.donationTime}</p>
+      <p className="mt-2">
+        <b>Status:</b>{" "}
+        <span className="capitalize">{request.donationStatus}</span>
       </p>
+
+      {/* 🔥 Donate button → ONLY donor & pending */}
+      {request.donationStatus === "pending" && role === "donor" && (
+        <button
+          onClick={handleDonate}
+          className="btn btn-error mt-6"
+        >
+          Donate Now
+        </button>
+      )}
     </div>
   );
 };
