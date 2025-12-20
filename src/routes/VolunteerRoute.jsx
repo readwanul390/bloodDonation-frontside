@@ -25,12 +25,11 @@ const VolunteerRoute = ({ children }) => {
     return <p className="text-center mt-10">Checking permission...</p>;
   }
 
-  // ✅ Only volunteer allowed
   if (user && role === "volunteer") {
     return children;
   }
 
-  // ❌ Others redirected to dashboard home
+  
   return <Navigate to="/dashboard" state={{ from: location }} replace />;
 };
 

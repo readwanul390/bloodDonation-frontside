@@ -1,36 +1,56 @@
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import { useContext } from "react";
 import { AuthContext } from "../providers/AuthProvider";
 
 const Navbar = () => {
-  const { user, logoutUser } = useContext(AuthContext);
+  const { user, logOut } = useContext(AuthContext);
 
   return (
-    <nav className="bg-white shadow px-6 py-3 flex justify-between items-center">
+    <div className="navbar bg-white shadow px-6">
       {/* Logo */}
-      <Link to="/" className="text-xl font-bold text-red-600">
-        BloodDonate
-      </Link>
+      <div className="flex-1">
+        <Link to="/" className="text-xl font-bold text-red-600">
+          BloodCare
+        </Link>
+      </div>
 
-      
-      <div>
+      {/* Menu */}
+      <div className="flex-none gap-4 items-center">
+        <NavLink to="/donation-requests">Donation Requests</NavLink>
+
         {!user ? (
-          <Link
-            to="/login"
-            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-          >
-            Login
-          </Link>
+          <>
+            <NavLink to="/login">Login</NavLink>
+          </>
         ) : (
-          <button
-            onClick={logoutUser}
-            className="px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-900 cursor-pointer"
-          >
-            Logout
-          </button>
+          <>
+            <NavLink to="/funding">Funding</NavLink>
+
+            {/* Avatar Dropdown */}
+            <div className="dropdown dropdown-end">
+              <label tabIndex={0} className="btn btn-ghost btn-circle avatar">
+                <img
+                  src={user.photoURL}
+                  className="w-10 rounded-full"
+                />
+              </label>
+
+              <ul
+                tabIndex={0}
+                className="menu dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-40"
+              >
+                <li>
+                  <NavLink to="/dashboard">Dashboard</NavLink>
+                </li>
+                <li>
+                  <button onClick={logOut}>Logout</button>
+                </li>
+              </ul>
+            </div>
+          </>
         )}
       </div>
-    </nav>
+    </div>
   );
 };
 
