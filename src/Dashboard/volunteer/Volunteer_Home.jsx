@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-const AdminHome = () => {
+const VolunteerHome = () => {
   const [stats, setStats] = useState(null);
   const [totalFund, setTotalFund] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
 
   useEffect(() => {
     const loadData = async () => {
@@ -13,7 +12,6 @@ const AdminHome = () => {
         const statsRes = await axios.get(
           "http://localhost:5000/admin/stats"
         );
-
         const fundRes = await axios.get(
           "http://localhost:5000/fundings/total"
         );
@@ -22,7 +20,6 @@ const AdminHome = () => {
         setTotalFund(fundRes.data.total);
       } catch (err) {
         console.error(err);
-        setError("Failed to load dashboard data");
       } finally {
         setLoading(false);
       }
@@ -31,61 +28,34 @@ const AdminHome = () => {
     loadData();
   }, []);
 
-  if (loading) {
-    return (
-      <p className="text-center mt-10 text-lg">
-        Loading admin dashboard...
-      </p>
-    );
-  }
-
-  if (error) {
-    return (
-      <p className="text-center mt-10 text-red-500">
-        {error}
-      </p>
-    );
-  }
+  if (loading) return <p>Loading dashboard...</p>;
 
   return (
     <div>
       <h2 className="text-2xl font-bold mb-6">
-        Welcome, Admin 👋
+        Welcome Volunteer 🤝
       </h2>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Total Donors */}
         <div className="bg-white shadow p-6 rounded">
-          <h3 className="text-gray-600 text-sm">
-            Total Donors
-          </h3>
-          <p className="text-3xl font-bold text-red-600">
-            {stats.totalDonors}
-          </p>
+          <h3 className="text-sm text-gray-600">Total Donors</h3>
+          <p className="text-3xl font-bold">{stats.totalDonors}</p>
         </div>
 
-        {/* Total Funding */}
         <div className="bg-white shadow p-6 rounded">
-          <h3 className="text-gray-600 text-sm">
-            Total Funding
-          </h3>
+          <h3 className="text-sm text-gray-600">Total Funding</h3>
           <p className="text-3xl font-bold text-green-600">
             ৳ {totalFund}
           </p>
         </div>
 
-        {/* Donation Requests */}
         <div className="bg-white shadow p-6 rounded">
-          <h3 className="text-gray-600 text-sm">
-            Donation Requests
-          </h3>
-          <p className="text-3xl font-bold text-blue-600">
-            {stats.totalRequests}
-          </p>
+          <h3 className="text-sm text-gray-600">Total Requests</h3>
+          <p className="text-3xl font-bold">{stats.totalRequests}</p>
         </div>
       </div>
     </div>
   );
 };
 
-export default AdminHome;
+export default VolunteerHome;

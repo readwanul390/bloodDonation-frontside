@@ -21,6 +21,8 @@ import VolunteerRoute from "./VolunteerRoute";
 import Search from "../Pages/Search";
 import DonationRequestDetails from "../Pages/DonationRequestDetails";
 import DonationRequests from "../Pages/DonationRequests";
+import Funding from "../Pages/Funding";
+import VolunteerHome from "../Dashboard/volunteer/Volunteer_Home";
 
 
 
@@ -48,6 +50,14 @@ const Router = createBrowserRouter([
 
       // 🔹 COMMON
       { path: "profile", element: <Profile /> },
+      {
+        path: "funding",
+        element: (
+          <PrivateRoute>
+            <Funding/>
+          </PrivateRoute>
+        ),
+      },
 
       // 🔹 DONOR
       { path: "my-donation-requests", element: <MyDonationRequests /> },
@@ -88,6 +98,14 @@ const Router = createBrowserRouter([
           </VolunteerRoute>
         ),
       },
+      {
+        path: "volunteer/volunteer-home",
+        element: (
+          <VolunteerRoute>
+            <VolunteerHome />
+          </VolunteerRoute>
+        ),
+      }
     ],
     
   },
@@ -109,6 +127,8 @@ const Router = createBrowserRouter([
       </PrivateRoute>
     ),
   },
+  
+
   
 
 ]);

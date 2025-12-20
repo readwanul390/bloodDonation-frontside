@@ -46,17 +46,23 @@ const DashboardLayout = () => {
               <NavLink to="/dashboard/create-donation-request">
                 Create Request
               </NavLink>
+              <NavLink to="/dashboard/funding">
+                Funding
+              </NavLink>
             </>
           )}
 
           {/* ===== ADMIN ===== */}
           {role === "admin" && (
             <>
-              <NavLink to="/dashboard/admin">Admin Home</NavLink>
+              <NavLink to="/dashboard/admin">Home</NavLink>
               <NavLink to="/dashboard/profile">Profile</NavLink>
               <NavLink to="/dashboard/all-users">All Users</NavLink>
               <NavLink to="/dashboard/all-blood-donation-request">
                 All Blood Donation Requests
+              </NavLink>
+              <NavLink to="/dashboard/funding">
+                Funding
               </NavLink>
             </>
           )}
@@ -65,10 +71,13 @@ const DashboardLayout = () => {
           {role === "volunteer" && (
             <>
               {/* Same home as admin */}
-              <NavLink to="/dashboard/admin">Dashboard Home</NavLink>
+              <NavLink to="/dashboard/volunteer/volunteer-home"> Home</NavLink>
               <NavLink to="/dashboard/profile">Profile</NavLink>
               <NavLink to="/dashboard/volunteer/all-blood-donation-request">
                 All Blood Donation Requests
+              </NavLink>
+              <NavLink to="/dashboard/funding">
+                Funding
               </NavLink>
             </>
           )}
