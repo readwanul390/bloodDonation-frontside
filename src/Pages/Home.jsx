@@ -24,7 +24,7 @@ const Home = () => {
 
           <button
             className="btn btn-outline btn-error"
-            onClick={() => navigate("/donation-requests")}
+            onClick={() => navigate("/search")}
           >
             Search Donors
           </button>

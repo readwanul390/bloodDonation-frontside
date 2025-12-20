@@ -18,6 +18,9 @@ import AllBloodDonationRequestsVolunteer from "../Dashboard/Volunteer/AllBloodDo
 import PrivateRoute from "./PrivateRoute";
 import AdminRoute from "./AdminRoute";
 import VolunteerRoute from "./VolunteerRoute";
+import Search from "../Pages/Search";
+import DonationRequestDetails from "../Pages/DonationRequestDetails";
+import DonationRequests from "../Pages/DonationRequests";
 
 const Router = createBrowserRouter([
   {
@@ -84,7 +87,27 @@ const Router = createBrowserRouter([
         ),
       },
     ],
+    
   },
+  
+
+  {
+    path: "search",
+    element: <Search />,
+  },
+  {
+    path: "donation-requests",
+    element: <DonationRequests />,
+  },
+  {
+    path: "donation-request/:id",
+    element: (
+      <PrivateRoute>
+        <DonationRequestDetails />
+      </PrivateRoute>
+    ),
+  },
+
 ]);
 
 export default Router;
