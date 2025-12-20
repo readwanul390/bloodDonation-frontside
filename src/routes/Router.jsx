@@ -15,6 +15,7 @@ import AllUsers from "../Dashboard/Admin/AllUsers";
 
 import PrivateRoute from "./PrivateRoute";
 import AdminRoute from "./AdminRoute";
+import AllBloodDonationRequests from "../Dashboard/MyDonationRequests";
 
 const Router = createBrowserRouter([
   {
@@ -62,6 +63,13 @@ const Router = createBrowserRouter([
           </AdminRoute>
         ),
       },
+      {
+        path: "/dashboard/all-blood-donation-request",
+        element : (<AdminRoute>
+            <AllBloodDonationRequests />
+          </AdminRoute>),
+      }
+
     ],
   },
 ]);

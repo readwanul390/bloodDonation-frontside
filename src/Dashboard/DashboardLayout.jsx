@@ -32,13 +32,13 @@ const DashboardLayout = () => {
         </h2>
 
         <nav className="flex flex-col gap-3">
-          {/* Common */}
-          <NavLink to="/dashboard">Home</NavLink>
-          <NavLink to="/dashboard/profile">Profile</NavLink>
+          
 
           {/* Donor only */}
           {role === "donor" && (
             <>
+              <NavLink to="/dashboard">Home</NavLink>
+              <NavLink to="/dashboard/profile">Profile</NavLink>
               <NavLink to="/dashboard/my-donation-requests">
                 My Donation Requests
               </NavLink>
@@ -52,7 +52,11 @@ const DashboardLayout = () => {
           {role === "admin" && (
             <>
               <NavLink to="/dashboard/admin">Admin Home</NavLink>
+              <NavLink to="/dashboard/profile">Profile</NavLink>
               <NavLink to="/dashboard/all-users">All Users</NavLink>
+              <NavLink to="/dashboard/all-blood-donation-request">
+                All Blood Donation Requests
+              </NavLink>
             </>
           )}
         </nav>

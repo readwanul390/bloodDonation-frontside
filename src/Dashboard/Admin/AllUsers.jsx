@@ -18,12 +18,14 @@ const AllUsers = () => {
   }, [filter]);
 
   const updateStatus = (id, status) => {
-    axios.patch(`http://localhost:5000/users/status/${id}`, { status })
+    axios
+      .patch(`http://localhost:5000/users/status/${id}`, { status })
       .then(() => loadUsers());
   };
 
   const updateRole = (id, role) => {
-    axios.patch(`http://localhost:5000/users/role/${id}`, { role })
+    axios
+      .patch(`http://localhost:5000/users/role/${id}`, { role })
       .then(() => loadUsers());
   };
 
@@ -31,6 +33,7 @@ const AllUsers = () => {
     <div>
       <h2 className="text-2xl font-bold mb-4">All Users</h2>
 
+      {/* ===== FILTER ===== */}
       <select
         className="select select-bordered mb-4"
         onChange={(e) => setFilter(e.target.value)}
@@ -40,6 +43,7 @@ const AllUsers = () => {
         <option value="blocked">Blocked</option>
       </select>
 
+      {/* ===== TABLE ===== */}
       <table className="table bg-white">
         <thead>
           <tr>
@@ -48,53 +52,90 @@ const AllUsers = () => {
             <th>Name</th>
             <th>Role</th>
             <th>Status</th>
-            <th>Actions</th>
+            <th className="text-center">Actions</th>
           </tr>
         </thead>
 
         <tbody>
-          {users.map(user => (
-            <tr key={user._id}>
-              <td>
-                <img src={user.avatar} className="w-10 rounded-full" />
-              </td>
-              <td>{user.email}</td>
-              <td>{user.name}</td>
-              <td>{user.role}</td>
-              <td>{user.status}</td>
-              <td className="space-x-2">
-                {user.status === "active" ? (
-                  <button
-                    className="btn btn-xs btn-error"
-                    onClick={() => updateStatus(user._id, "blocked")}
-                  >
-                    Block
-                  </button>
-                ) : (
-                  <button
-                    className="btn btn-xs btn-success"
-                    onClick={() => updateStatus(user._id, "active")}
-                  >
-                    Unblock
-                  </button>
-                )}
+          {users
+            // 🔴 ADMIN USERS FULLY HIDDEN
+            .filter(user => user.role !== "admin")
+            .map(user => (
+              <tr key={user._id}>
+                <td>
+                  <img
+                    src={user.avatar}
+                    alt="avatar"
+                    className="w-10 h-10 rounded-full"
+                  />
+                </td>
+                <td>{user.email}</td>
+                <td>{user.name}</td>
+                <td className="capitalize">{user.role}</td>
+                <td className="capitalize">{user.status}</td>
 
-                <button
-                  className="btn btn-xs"
-                  onClick={() => updateRole(user._id, "volunteer")}
-                >
-                  Make Volunteer
-                </button>
+                {/* ===== 3-DOT DROPDOWN ===== */}
+                <td className="text-center">
+                  <div className="dropdown dropdown-end">
+                    <label tabIndex={0} className="btn btn-ghost btn-sm">
+                      ⋮
+                    </label>
 
-                <button
-                  className="btn btn-xs btn-warning"
-                  onClick={() => updateRole(user._id, "admin")}
-                >
-                  Make Admin
-                </button>
-              </td>
-            </tr>
-          ))}
+                    <ul
+                      tabIndex={0}
+                      className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-40"
+                    >
+                      {/* Block / Unblock */}
+                      {user.status === "active" ? (
+                        <li>
+                          <button
+                            onClick={() =>
+                              updateStatus(user._id, "blocked")
+                            }
+                          >
+                            Block
+                          </button>
+                        </li>
+                      ) : (
+                        <li>
+                          <button
+                            onClick={() =>
+                              updateStatus(user._id, "active")
+                            }
+                          >
+                            Unblock
+                          </button>
+                        </li>
+                      )}
+
+                      {/* Make Volunteer */}
+                      {user.role === "donor" && (
+                        <li>
+                          <button
+                            onClick={() =>
+                              updateRole(user._id, "volunteer")
+                            }
+                          >
+                            Make Volunteer
+                          </button>
+                        </li>
+                      )}
+
+                      {/* Make Admin */}
+                      <li>
+                        <button
+                          onClick={() =>
+                            updateRole(user._id, "admin")
+                          }
+                        >
+                          Make Admin
+                        </button>
+                      </li>
+                    </ul>
+                  </div>
+                </td>
+              </tr>
+            ))}
         </tbody>
       </table>
     </div>
