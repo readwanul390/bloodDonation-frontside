@@ -25,16 +25,17 @@ const DashboardLayout = () => {
 
   return (
     <div className="flex min-h-screen">
-      {/* Sidebar */}
+      {/* ===== SIDEBAR ===== */}
       <aside className="w-64 bg-red-600 text-white p-5">
         <h2 className="text-xl font-bold mb-6">
-          {role === "admin" ? "Admin Dashboard" : "Donor Dashboard"}
+          {role === "admin" && "Admin Dashboard"}
+          {role === "donor" && "Donor Dashboard"}
+          {role === "volunteer" && "Volunteer Dashboard"}
         </h2>
 
         <nav className="flex flex-col gap-3">
-          
 
-          {/* Donor only */}
+          {/* ===== DONOR ===== */}
           {role === "donor" && (
             <>
               <NavLink to="/dashboard">Home</NavLink>
@@ -48,7 +49,7 @@ const DashboardLayout = () => {
             </>
           )}
 
-          {/* Admin only */}
+          {/* ===== ADMIN ===== */}
           {role === "admin" && (
             <>
               <NavLink to="/dashboard/admin">Admin Home</NavLink>
@@ -59,10 +60,22 @@ const DashboardLayout = () => {
               </NavLink>
             </>
           )}
+
+          {/* ===== VOLUNTEER ===== */}
+          {role === "volunteer" && (
+            <>
+              {/* Same home as admin */}
+              <NavLink to="/dashboard/admin">Dashboard Home</NavLink>
+              <NavLink to="/dashboard/profile">Profile</NavLink>
+              <NavLink to="/dashboard/volunteer/all-blood-donation-request">
+                All Blood Donation Requests
+              </NavLink>
+            </>
+          )}
         </nav>
       </aside>
 
-      {/* Main Content */}
+      {/* ===== MAIN CONTENT ===== */}
       <main className="flex-1 p-6 bg-gray-100">
         <Outlet />
       </main>

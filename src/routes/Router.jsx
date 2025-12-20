@@ -12,10 +12,12 @@ import CreateDonationRequest from "../Dashboard/CreateDonationRequest";
 
 import AdminHome from "../Dashboard/Admin/AdminHome";
 import AllUsers from "../Dashboard/Admin/AllUsers";
+import AllBloodDonationRequests from "../Dashboard/Admin/AllBloodDonationRequests";
+import AllBloodDonationRequestsVolunteer from "../Dashboard/Volunteer/AllBloodDonationRequestsVolunteer";
 
 import PrivateRoute from "./PrivateRoute";
 import AdminRoute from "./AdminRoute";
-import AllBloodDonationRequests from "../Dashboard/MyDonationRequests";
+import VolunteerRoute from "./VolunteerRoute";
 
 const Router = createBrowserRouter([
   {
@@ -36,17 +38,17 @@ const Router = createBrowserRouter([
       </PrivateRoute>
     ),
     children: [
-      // 🔹 DEFAULT DASHBOARD (ROLE-BASED inside component)
+      // 🔹 DEFAULT DASHBOARD (ROLE BASED)
       { index: true, element: <DonorHome /> },
 
       // 🔹 COMMON
       { path: "profile", element: <Profile /> },
 
-      // 🔹 DONOR ONLY
+      // 🔹 DONOR
       { path: "my-donation-requests", element: <MyDonationRequests /> },
       { path: "create-donation-request", element: <CreateDonationRequest /> },
 
-      // 🔹 ADMIN ONLY
+      // 🔹 ADMIN
       {
         path: "admin",
         element: (
@@ -64,12 +66,23 @@ const Router = createBrowserRouter([
         ),
       },
       {
-        path: "/dashboard/all-blood-donation-request",
-        element : (<AdminRoute>
+        path: "all-blood-donation-request",
+        element: (
+          <AdminRoute>
             <AllBloodDonationRequests />
-          </AdminRoute>),
-      }
+          </AdminRoute>
+        ),
+      },
 
+      // 🔹 VOLUNTEER
+      {
+        path: "volunteer/all-blood-donation-request",
+        element: (
+          <VolunteerRoute>
+            <AllBloodDonationRequestsVolunteer />
+          </VolunteerRoute>
+        ),
+      },
     ],
   },
 ]);
