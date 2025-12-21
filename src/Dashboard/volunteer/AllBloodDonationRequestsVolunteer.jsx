@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import Swal from "sweetalert2";
+import axiosSecure from "../../api/axiosSecure";
 
 const AllBloodDonationRequestsVolunteer = () => {
   const [requests, setRequests] = useState([]);
@@ -8,10 +8,10 @@ const AllBloodDonationRequestsVolunteer = () => {
 
   const loadRequests = () => {
     const url = filter
-      ? `http://localhost:5000/donation-requests?status=${filter}`
-      : `http://localhost:5000/donation-requests`;
+      ? `/donation-requests?status=${filter}`
+      : `/donation-requests`;
 
-    axios.get(url).then((res) => setRequests(res.data));
+    axiosSecure.get(url).then((res) => setRequests(res.data));
   };
 
   useEffect(() => {
@@ -20,8 +20,8 @@ const AllBloodDonationRequestsVolunteer = () => {
 
   /* ===== UPDATE STATUS (ONLY PERMISSION) ===== */
   const updateStatus = (id, donationStatus) => {
-    axios
-      .patch(`http://localhost:5000/donation-requests/status/${id}`, {
+    axiosSecure
+      .patch(`/donation-requests/status/${id}`, {
         donationStatus,
       })
       .then(() => {

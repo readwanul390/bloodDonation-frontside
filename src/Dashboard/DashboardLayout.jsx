@@ -1,7 +1,8 @@
 import { NavLink, Outlet } from "react-router-dom";
 import { useContext, useEffect, useState } from "react";
-import axios from "axios";
 import { AuthContext } from "../providers/AuthProvider";
+import axiosSecure from "../api/axiosSecure";
+
 
 const DashboardLayout = () => {
   const { user } = useContext(AuthContext);
@@ -10,8 +11,8 @@ const DashboardLayout = () => {
 
   useEffect(() => {
     if (user?.email) {
-      axios
-        .get(`http://localhost:5000/users/role/${user.email}`)
+      axiosSecure
+        .get(`/users/role/${user.email}`)
         .then((res) => {
           setRole(res.data.role);
           setLoading(false);
@@ -25,7 +26,6 @@ const DashboardLayout = () => {
 
   return (
     <div className="flex min-h-screen">
-      {/* ===== SIDEBAR ===== */}
       <aside className="w-64 bg-red-600 text-white p-5">
         <h2 className="text-xl font-bold mb-6">
           {role === "admin" && "Admin Dashboard"}
@@ -35,7 +35,7 @@ const DashboardLayout = () => {
 
         <nav className="flex flex-col gap-3">
 
-          {/* ===== DONOR ===== */}
+          
           {role === "donor" && (
             <>
               <NavLink to="/dashboard">Home</NavLink>
@@ -51,8 +51,6 @@ const DashboardLayout = () => {
               </NavLink>
             </>
           )}
-
-          {/* ===== ADMIN ===== */}
           {role === "admin" && (
             <>
               <NavLink to="/dashboard/admin">Home</NavLink>
@@ -67,10 +65,8 @@ const DashboardLayout = () => {
             </>
           )}
 
-          {/* ===== VOLUNTEER ===== */}
           {role === "volunteer" && (
             <>
-              {/* Same home as admin */}
               <NavLink to="/dashboard/volunteer/volunteer-home"> Home</NavLink>
               <NavLink to="/dashboard/profile">Profile</NavLink>
               <NavLink to="/dashboard/volunteer/all-blood-donation-request">
@@ -83,8 +79,6 @@ const DashboardLayout = () => {
           )}
         </nav>
       </aside>
-
-      {/* ===== MAIN CONTENT ===== */}
       <main className="flex-1 p-6 bg-gray-100">
         <Outlet />
       </main>

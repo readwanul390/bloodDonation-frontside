@@ -6,19 +6,30 @@ import {
   onAuthStateChanged,
   signOut,
 } from "firebase/auth";
+import axios from "axios";
 import { auth } from "../firebase/firebase.config";
 
 export const AuthContext = createContext();
-
 
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const loginUser = (email, password) => {
-    return signInWithEmailAndPassword(auth, email, password);
+  // 🔐 LOGIN
+  const loginUser = async (email, password) => {
+    const result = await signInWithEmailAndPassword(auth, email, password);
+
+    // 🔑 get JWT from backend
+    const res = await axios.post("http://localhost:5000/jwt", {
+      email: result.user.email,
+    });
+
+    localStorage.setItem("access-token", res.data.token);
+
+    return result;
   };
 
+  // 📝 REGISTER
   const registerUser = async (email, password, name, photoURL) => {
     const result = await createUserWithEmailAndPassword(
       auth,
@@ -34,11 +45,13 @@ const AuthProvider = ({ children }) => {
     return result;
   };
 
-  const logoutUser = () => {
+  // 🚪 LOGOUT
+  const logoutUser = async () => {
+    localStorage.removeItem("access-token");
     return signOut(auth);
   };
 
-  // 🔥 THIS IS THE KEY PART
+  // 🔁 AUTH STATE
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);

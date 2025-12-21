@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import Swal from "sweetalert2";
+import axiosSecure from "../../api/axiosSecure";
+
+
 
 const AllBloodDonationRequests = () => {
   const [requests, setRequests] = useState([]);
@@ -8,10 +10,10 @@ const AllBloodDonationRequests = () => {
 
   const loadRequests = () => {
     const url = filter
-      ? `http://localhost:5000/donation-requests?status=${filter}`
-      : `http://localhost:5000/donation-requests`;
+      ? `/donation-requests?status=${filter}`
+      : `/donation-requests`;
 
-    axios.get(url).then((res) => setRequests(res.data));
+    axiosSecure.get(url).then((res) => setRequests(res.data));
   };
 
   useEffect(() => {
@@ -20,8 +22,8 @@ const AllBloodDonationRequests = () => {
 
   /* ===== UPDATE STATUS ===== */
   const updateStatus = (id, donationStatus) => {
-    axios
-      .patch(`http://localhost:5000/donation-requests/status/${id}`, {
+    axiosSecure
+      .patch(`/donation-requests/status/${id}`, {
         donationStatus,
       })
       .then(() => {
@@ -40,8 +42,8 @@ const AllBloodDonationRequests = () => {
       confirmButtonText: "Yes, delete it",
     }).then((result) => {
       if (result.isConfirmed) {
-        axios
-          .delete(`http://localhost:5000/donation-requests/${id}`)
+        axiosSecure
+          .delete(`/donation-requests/${id}`)
           .then(() => {
             Swal.fire("Deleted!", "Request deleted.", "success");
             loadRequests();

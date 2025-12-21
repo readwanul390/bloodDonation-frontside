@@ -1,8 +1,9 @@
 import { useParams } from "react-router-dom";
 import { useContext, useEffect, useState } from "react";
-import axios from "axios";
 import Swal from "sweetalert2";
 import { AuthContext } from "../providers/AuthProvider";
+import axiosSecure from "../api/axiosSecure";
+
 
 const DonationRequestDetails = () => {
   const { id } = useParams();
@@ -13,16 +14,16 @@ const DonationRequestDetails = () => {
 
   // 🔹 load donation request
   useEffect(() => {
-    axios
-      .get(`http://localhost:5000/donation-requests/${id}`)
+    axiosSecure
+      .get(`/donation-requests/${id}`)
       .then(res => setRequest(res.data));
   }, [id]);
 
   // 🔹 load user role
   useEffect(() => {
     if (user?.email) {
-      axios
-        .get(`http://localhost:5000/users/role/${user.email}`)
+      axiosSecure
+        .get(`/users/role/${user.email}`)
         .then(res => setRole(res.data.role));
     }
   }, [user]);
@@ -38,8 +39,8 @@ const DonationRequestDetails = () => {
     });
 
     if (confirm.isConfirmed) {
-      await axios.patch(
-        `http://localhost:5000/donation-requests/status/${id}`,
+      await axiosSecure.patch(
+        `/donation-requests/status/${id}`,
         {
           donationStatus: "inprogress",
           donorName: user.displayName,

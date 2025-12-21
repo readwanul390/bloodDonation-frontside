@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axiosSecure from "../../api/axiosSecure";
+
 
 const AllUsers = () => {
   const [users, setUsers] = useState([]);
@@ -7,10 +8,10 @@ const AllUsers = () => {
 
   const loadUsers = () => {
     const url = filter
-      ? `http://localhost:5000/users?status=${filter}`
-      : `http://localhost:5000/users`;
+      ? `/users?status=${filter}`
+      : `/users`;
 
-    axios.get(url).then(res => setUsers(res.data));
+    axiosSecure.get(url).then(res => setUsers(res.data));
   };
 
   useEffect(() => {
@@ -18,14 +19,14 @@ const AllUsers = () => {
   }, [filter]);
 
   const updateStatus = (id, status) => {
-    axios
-      .patch(`http://localhost:5000/users/status/${id}`, { status })
+    axiosSecure
+      .patch(`/users/status/${id}`, { status })
       .then(() => loadUsers());
   };
 
   const updateRole = (id, role) => {
-    axios
-      .patch(`http://localhost:5000/users/role/${id}`, { role })
+    axiosSecure
+      .patch(`/users/role/${id}`, { role })
       .then(() => loadUsers());
   };
 

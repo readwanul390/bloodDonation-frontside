@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axiosSecure from "../../api/axiosSecure";
 
 const VolunteerHome = () => {
   const [stats, setStats] = useState(null);
@@ -9,11 +9,11 @@ const VolunteerHome = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const statsRes = await axios.get(
-          "http://localhost:5000/admin/stats"
+        const statsRes = await axiosSecure.get(
+          "/admin/stats"
         );
-        const fundRes = await axios.get(
-          "http://localhost:5000/fundings/total"
+        const fundRes = await axiosSecure.get(
+          "/fundings/total"
         );
 
         setStats(statsRes.data);

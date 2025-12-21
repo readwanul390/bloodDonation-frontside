@@ -1,7 +1,9 @@
 import { useContext, useEffect, useState } from "react";
-import axios from "axios";
 import Swal from "sweetalert2";
 import { AuthContext } from "../providers/AuthProvider";
+import axiosSecure from "../api/axiosSecure";
+
+
 
 const Funding = () => {
   const { user } = useContext(AuthContext);
@@ -9,7 +11,7 @@ const Funding = () => {
 
   // 🔹 Load all fundings
   useEffect(() => {
-    axios.get("http://localhost:5000/fundings")
+    axiosSecure.get("/fundings")
       .then(res => setFunds(res.data));
   }, []);
 
@@ -25,7 +27,7 @@ const Funding = () => {
 
     if (!amount) return;
 
-    await axios.post("http://localhost:5000/fundings", {
+    await axiosSecure.post("/fundings", {
       userName: user.displayName,
       userEmail: user.email,
       amount,
@@ -33,7 +35,7 @@ const Funding = () => {
 
     Swal.fire("Success", "Thank you for your support!", "success");
 
-    const updated = await axios.get("http://localhost:5000/fundings");
+    const updated = await axiosSecure.get("/fundings");
     setFunds(updated.data);
   };
 
