@@ -3,58 +3,47 @@ import axiosSecure from "../../api/axiosSecure";
 
 const VolunteerHome = () => {
   const [stats, setStats] = useState(null);
-  const [totalFund, setTotalFund] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        const statsRes = await axiosSecure.get(
-          "/admin/stats"
-        );
-        const fundRes = await axiosSecure.get(
-          "/fundings/total"
-        );
-
-        setStats(statsRes.data);
-        setTotalFund(fundRes.data.total);
-      } catch (err) {
-        console.error(err);
-      } finally {
+    axiosSecure
+      .get("/volunteer/stats")
+      .then((res) => {
+        setStats(res.data);
         setLoading(false);
-      }
-    };
-
-    loadData();
+      })
+      .catch((err) => {
+        console.error(err);
+        setLoading(false);
+      });
   }, []);
 
-  if (loading) return <p>Loading dashboard...</p>;
+  if (loading) {
+    return <p className="text-center mt-10">Loading Volunteer Dashboard...</p>;
+  }
+
+  if (!stats) {
+    return <p className="text-center mt-10">No data available</p>;
+  }
 
   return (
-    <div>
-      <h2 className="text-2xl font-bold mb-6">
-        Welcome Volunteer 🤝
-      </h2>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+  <div className="bg-white p-5 rounded shadow">
+    <h3>Total Requests</h3>
+    <p className="text-3xl">{stats.totalRequests}</p>
+  </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white shadow p-6 rounded">
-          <h3 className="text-sm text-gray-600">Total Donors</h3>
-          <p className="text-3xl font-bold">{stats.totalDonors}</p>
-        </div>
+  <div className="bg-white p-5 rounded shadow">
+    <h3>Pending Requests</h3>
+    <p className="text-3xl">{stats.pendingRequests}</p>
+  </div>
 
-        <div className="bg-white shadow p-6 rounded">
-          <h3 className="text-sm text-gray-600">Total Funding</h3>
-          <p className="text-3xl font-bold text-green-600">
-            ৳ {totalFund}
-          </p>
-        </div>
+  <div className="bg-white p-5 rounded shadow">
+    <h3>Total Funding</h3>
+    <p className="text-3xl">৳ {stats.totalFunding}</p>
+  </div>
+</div>
 
-        <div className="bg-white shadow p-6 rounded">
-          <h3 className="text-sm text-gray-600">Total Requests</h3>
-          <p className="text-3xl font-bold">{stats.totalRequests}</p>
-        </div>
-      </div>
-    </div>
   );
 };
 

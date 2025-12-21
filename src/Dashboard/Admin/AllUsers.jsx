@@ -1,22 +1,31 @@
 import { useEffect, useState } from "react";
 import axiosSecure from "../../api/axiosSecure";
 
-
 const AllUsers = () => {
   const [users, setUsers] = useState([]);
   const [filter, setFilter] = useState("");
+  const [page, setPage] = useState(1);
+  const limit = 8;
+
+  const [total, setTotal] = useState(0);
+  const totalPages = Math.ceil(total / limit);
 
   const loadUsers = () => {
-    const url = filter
-      ? `/users?status=${filter}`
-      : `/users`;
+    let url = `/users?page=${page}&limit=${limit}`;
 
-    axiosSecure.get(url).then(res => setUsers(res.data));
+    if (filter) {
+      url += `&status=${filter}`;
+    }
+
+    axiosSecure.get(url).then((res) => {
+      setUsers(res.data.users);
+      setTotal(res.data.total);
+    });
   };
 
   useEffect(() => {
     loadUsers();
-  }, [filter]);
+  }, [filter, page]);
 
   const updateStatus = (id, status) => {
     axiosSecure
@@ -37,7 +46,11 @@ const AllUsers = () => {
       {/* ===== FILTER ===== */}
       <select
         className="select select-bordered mb-4"
-        onChange={(e) => setFilter(e.target.value)}
+        value={filter}
+        onChange={(e) => {
+          setFilter(e.target.value);
+          setPage(1); // reset page on filter
+        }}
       >
         <option value="">All</option>
         <option value="active">Active</option>
@@ -59,9 +72,8 @@ const AllUsers = () => {
 
         <tbody>
           {users
-            // 🔴 ADMIN USERS FULLY HIDDEN
-            .filter(user => user.role !== "admin")
-            .map(user => (
+            .filter((user) => user.role !== "admin") // admin hidden
+            .map((user) => (
               <tr key={user._id}>
                 <td>
                   <img
@@ -75,7 +87,7 @@ const AllUsers = () => {
                 <td className="capitalize">{user.role}</td>
                 <td className="capitalize">{user.status}</td>
 
-                {/* ===== 3-DOT DROPDOWN ===== */}
+                {/* ===== ACTION DROPDOWN ===== */}
                 <td className="text-center">
                   <div className="dropdown dropdown-end">
                     <label tabIndex={0} className="btn btn-ghost btn-sm">
@@ -86,7 +98,6 @@ const AllUsers = () => {
                       tabIndex={0}
                       className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-40"
                     >
-                      {/* Block / Unblock */}
                       {user.status === "active" ? (
                         <li>
                           <button
@@ -109,7 +120,6 @@ const AllUsers = () => {
                         </li>
                       )}
 
-                      {/* Make Volunteer */}
                       {user.role === "donor" && (
                         <li>
                           <button
@@ -122,7 +132,6 @@ const AllUsers = () => {
                         </li>
                       )}
 
-                      {/* Make Admin */}
                       <li>
                         <button
                           onClick={() =>
@@ -139,6 +148,37 @@ const AllUsers = () => {
             ))}
         </tbody>
       </table>
+
+      {/* ===== PAGINATION ===== */}
+      <div className="flex justify-center gap-2 mt-6">
+        <button
+          className="btn btn-sm"
+          disabled={page === 1}
+          onClick={() => setPage(page - 1)}
+        >
+          Prev
+        </button>
+
+        {[...Array(totalPages).keys()].map((num) => (
+          <button
+            key={num}
+            className={`btn btn-sm ${
+              page === num + 1 ? "btn-active" : ""
+            }`}
+            onClick={() => setPage(num + 1)}
+          >
+            {num + 1}
+          </button>
+        ))}
+
+        <button
+          className="btn btn-sm"
+          disabled={page === totalPages}
+          onClick={() => setPage(page + 1)}
+        >
+          Next
+        </button>
+      </div>
     </div>
   );
 };
