@@ -3,19 +3,31 @@ import Swal from "sweetalert2";
 import { AuthContext } from "../providers/AuthProvider";
 import axiosSecure from "../api/axiosSecure";
 
-
-
 const Funding = () => {
   const { user } = useContext(AuthContext);
+
   const [funds, setFunds] = useState([]);
+  const [page, setPage] = useState(1);
+  const limit = 6;
+  const [total, setTotal] = useState(0);
 
-  // 🔹 Load all fundings
+  const totalPages = Math.ceil(total / limit);
+
+  // 🔹 Load fundings with pagination
+  const loadFunds = () => {
+    axiosSecure
+      .get(`/fundings?page=${page}&limit=${limit}`)
+      .then((res) => {
+        setFunds(res.data.fundings);
+        setTotal(res.data.total);
+      });
+  };
+
   useEffect(() => {
-    axiosSecure.get("/fundings")
-      .then(res => setFunds(res.data));
-  }, []);
+    loadFunds();
+  }, [page]);
 
-  // 🔹 Give fund (Stripe simulated)
+  // 🔹 Give fund
   const handleGiveFund = async () => {
     const { value: amount } = await Swal.fire({
       title: "Give Fund",
@@ -34,19 +46,15 @@ const Funding = () => {
     });
 
     Swal.fire("Success", "Thank you for your support!", "success");
-
-    const updated = await axiosSecure.get("/fundings");
-    setFunds(updated.data);
+    setPage(1); // go back to first page
+    loadFunds();
   };
 
   return (
     <div className="p-6 bg-white rounded shadow">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold">Funding</h2>
-        <button
-          onClick={handleGiveFund}
-          className="btn btn-success"
-        >
+        <button onClick={handleGiveFund} className="btn btn-success">
           Give Fund
         </button>
       </div>
@@ -62,18 +70,47 @@ const Funding = () => {
         </thead>
 
         <tbody>
-          {funds.map(fund => (
+          {funds.map((fund) => (
             <tr key={fund._id}>
               <td>{fund.userName}</td>
               <td>{fund.userEmail}</td>
               <td>৳ {fund.amount}</td>
-              <td>
-                {new Date(fund.createdAt).toLocaleDateString()}
-              </td>
+              <td>{new Date(fund.createdAt).toLocaleDateString()}</td>
             </tr>
           ))}
         </tbody>
       </table>
+
+      {/* 🔹 Pagination */}
+      <div className="flex justify-center mt-4 gap-2">
+        <button
+          className="btn btn-sm"
+          disabled={page === 1}
+          onClick={() => setPage(page - 1)}
+        >
+          Prev
+        </button>
+
+        {[...Array(totalPages).keys()].map((num) => (
+          <button
+            key={num}
+            className={`btn btn-sm ${
+              page === num + 1 ? "btn-primary" : ""
+            }`}
+            onClick={() => setPage(num + 1)}
+          >
+            {num + 1}
+          </button>
+        ))}
+
+        <button
+          className="btn btn-sm"
+          disabled={page === totalPages}
+          onClick={() => setPage(page + 1)}
+        >
+          Next
+        </button>
+      </div>
     </div>
   );
 };
