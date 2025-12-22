@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
-
-const API = import.meta.env.VITE_API_URL;
+import axiosSecure from "../api/axiosSecure";
 
 const DonationRequests = () => {
   const [requests, setRequests] = useState([]);
@@ -14,17 +12,15 @@ const DonationRequests = () => {
 
   const navigate = useNavigate();
 
-  
   useEffect(() => {
-    axios
-      .get(
-        `${API}/donation-requests?status=pending&page=${page}&limit=${limit}`
-      )
+    axiosSecure
+      .get(`/donation-requests?status=pending&page=${page}&limit=${limit}`)
       .then((res) => {
         setRequests(res.data.requests || []);
         setTotal(res.data.total || 0);
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error(err);
         setRequests([]);
         setTotal(0);
       });
@@ -46,13 +42,9 @@ const DonationRequests = () => {
         </p>
       ) : (
         <>
-          
           <div className="grid md:grid-cols-3 gap-6">
             {requests.map((req) => (
-              <div
-                key={req._id}
-                className="card bg-white shadow p-4"
-              >
+              <div key={req._id} className="card bg-white shadow p-4">
                 <h3 className="text-xl font-semibold">
                   {req.recipientName}
                 </h3>
@@ -78,7 +70,6 @@ const DonationRequests = () => {
             ))}
           </div>
 
-         
           {totalPages > 1 && (
             <div className="flex justify-center mt-8 gap-2">
               <button

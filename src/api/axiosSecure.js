@@ -2,7 +2,7 @@ import axios from "axios";
 const API = import.meta.env.VITE_API_URL;
 
 const axiosSecure = axios.create({
-  baseURL: "${API}",
+  baseURL: API,
 });
 
 
