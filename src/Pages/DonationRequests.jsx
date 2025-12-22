@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
+const API = import.meta.env.VITE_API_URL;
+
 const DonationRequests = () => {
   const [requests, setRequests] = useState([]);
   const [page, setPage] = useState(1);
@@ -12,16 +14,19 @@ const DonationRequests = () => {
 
   const navigate = useNavigate();
 
-  /* ===== Load pending requests (public) ===== */
+  
   useEffect(() => {
     axios
       .get(
-        `http://localhost:5000/donation-requests?status=pending&page=${page}&limit=${limit}`
+        `${API}/donation-requests?status=pending&page=${page}&limit=${limit}`
       )
       .then((res) => {
-        // 🔐 SAFE FIX (array always)
         setRequests(res.data.requests || []);
         setTotal(res.data.total || 0);
+      })
+      .catch(() => {
+        setRequests([]);
+        setTotal(0);
       });
   }, [page]);
 
@@ -41,7 +46,7 @@ const DonationRequests = () => {
         </p>
       ) : (
         <>
-          {/* ===== CARD GRID ===== */}
+          
           <div className="grid md:grid-cols-3 gap-6">
             {requests.map((req) => (
               <div
@@ -73,7 +78,7 @@ const DonationRequests = () => {
             ))}
           </div>
 
-          {/* ===== PAGINATION ===== */}
+         
           {totalPages > 1 && (
             <div className="flex justify-center mt-8 gap-2">
               <button

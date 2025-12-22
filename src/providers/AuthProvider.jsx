@@ -10,6 +10,7 @@ import axios from "axios";
 import { auth } from "../firebase/firebase.config";
 
 export const AuthContext = createContext();
+const API = import.meta.env.VITE_API_URL;
 
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -20,7 +21,7 @@ const AuthProvider = ({ children }) => {
     const result = await signInWithEmailAndPassword(auth, email, password);
 
     // 🔑 get JWT from backend
-    const res = await axios.post("http://localhost:5000/jwt", {
+    const res = await axios.post(`${API}/jwt`, {
       email: result.user.email,
     });
 

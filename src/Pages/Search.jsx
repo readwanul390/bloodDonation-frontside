@@ -4,6 +4,7 @@ import districts from "../data/districts";
 import upazilas from "../data/upazilas";
 
 const bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+const API = import.meta.env.VITE_API_URL;
 
 const Search = () => {
   const [bloodGroup, setBloodGroup] = useState("");
@@ -14,6 +15,7 @@ const Search = () => {
   const [searched, setSearched] = useState(false);
 
   const handleDistrictChange = (e) => {
+    const API = import.meta.env.VITE_API_URL;
     const selectedDistrict = e.target.value;
     setDistrict(selectedDistrict);
     setUpazila("");
@@ -31,7 +33,7 @@ const Search = () => {
     e.preventDefault();
 
     const res = await axios.get(
-      "http://localhost:5000/search-donors",
+      `${API}/search-donors`,
       {
         params: {
           bloodGroup,

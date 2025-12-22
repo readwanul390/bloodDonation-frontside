@@ -3,42 +3,40 @@ import { AuthContext } from "../providers/AuthProvider";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
+const API = import.meta.env.VITE_API_URL;
+
 const Login = () => {
   const { loginUser } = useContext(AuthContext);
   const navigate = useNavigate();
-
   const [loading, setLoading] = useState(false);
-  const [Role, setRole] = useState("");
 
   const handleLogin = async (e) => {
-  e.preventDefault();
-  const email = e.target.email.value;
-  const password = e.target.password.value;
+    e.preventDefault();
 
-  setLoading(true);
+    const email = e.target.email.value;
+    const password = e.target.password.value;
 
-  try {
-    // 1️⃣ Login
-    await loginUser(email, password);
+    try {
+      setLoading(true);
 
-    // 2️⃣ Get role from backend
-    const res = await axios.get(
-      `http://localhost:5000/users/role/${email}`
-    );
+      // 1️⃣ Firebase login
+      await loginUser(email, password);
 
-    console.log(res.data.email);
-    setRole(res.data.role);
+      // 2️⃣ Get JWT from backend
+      const jwtRes = await axios.post(`${API}/jwt`, { email });
 
-    // 3️⃣ Success
-    alert("Login Successful!");
-    navigate("/");
-  } catch (error) {
-    alert(error.message);
-  } finally {
-    setLoading(false);
-  }
-};
+      // 3️⃣ Save token
+      localStorage.setItem("access-token", jwtRes.data.token);
 
+      alert("Login Successful!");
+      navigate("/dashboard");
+
+    } catch (error) {
+      alert(error.message || "Login failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex justify-center items-center bg-base-200">
@@ -52,8 +50,8 @@ const Login = () => {
               name="email"
               required
               placeholder="Email"
-              className="input input-bordered w-full"
               autoComplete="off"
+              className="input input-bordered w-full"
             />
 
             <input
@@ -61,8 +59,8 @@ const Login = () => {
               name="password"
               required
               placeholder="Password"
-              className="input input-bordered w-full"
               autoComplete="new-password"
+              className="input input-bordered w-full"
             />
 
             <button

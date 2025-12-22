@@ -1,9 +1,12 @@
 import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import districts from "../data/districts";
 import upazilasData from "../data/upazilas";
-import axios from "axios";
 import { AuthContext } from "../providers/AuthProvider";
+
+const bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+const API = import.meta.env.VITE_API_URL;
 
 const Register = () => {
   const { registerUser } = useContext(AuthContext);
@@ -13,7 +16,6 @@ const Register = () => {
     email: "",
     name: "",
     avatar: null,
-    role: "",                 // ✅ NEW
     bloodGroup: "",
     districtId: "",
     upazila: "",
@@ -24,9 +26,7 @@ const Register = () => {
   const [filteredUpazilas, setFilteredUpazilas] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
-
-  // 🔄 Handle input change
+  // 🔄 handle input
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -34,10 +34,10 @@ const Register = () => {
       const updated = { ...prev, [name]: value };
 
       if (name === "districtId") {
-        const filtered = upazilasData.filter(
+        const ups = upazilasData.filter(
           (u) => u.district_id === value
         );
-        setFilteredUpazilas(filtered);
+        setFilteredUpazilas(ups);
         updated.upazila = "";
       }
 
@@ -45,7 +45,7 @@ const Register = () => {
     });
   };
 
-  // 🖼️ Upload image to imgBB
+  // 🖼️ imgBB upload
   const uploadImage = async (image) => {
     if (!image) return "";
 
@@ -60,11 +60,10 @@ const Register = () => {
     return res.data.data.display_url;
   };
 
-  // 🚀 Submit form
+  // 🚀 submit
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // ✅ validations
     if (formData.password !== formData.confirmPassword) {
       alert("Password does not match");
       return;
@@ -75,18 +74,13 @@ const Register = () => {
       return;
     }
 
-    if (!formData.role) {
-      alert("Please select a role");
-      return;
-    }
-
     try {
       setLoading(true);
 
-      // 1️⃣ Upload image
+      // 1️⃣ upload avatar
       const avatarUrl = await uploadImage(formData.avatar);
 
-      // 2️⃣ Firebase register
+      // 2️⃣ firebase register
       await registerUser(
         formData.email,
         formData.password,
@@ -94,7 +88,7 @@ const Register = () => {
         avatarUrl
       );
 
-      // 3️⃣ Prepare MongoDB data
+      // 3️⃣ prepare MongoDB user
       const selectedDistrict = districts.find(
         (d) => d.id === formData.districtId
       );
@@ -103,25 +97,31 @@ const Register = () => {
         email: formData.email,
         name: formData.name,
         avatar: avatarUrl,
-        role: formData.role,           // ✅ SELECTED ROLE
+        role: "donor", // 🔒 FIXED (no frontend role abuse)
         bloodGroup: formData.bloodGroup,
         district: selectedDistrict?.name,
         upazila: formData.upazila,
         status: "active",
       };
 
-      // 4️⃣ Save to MongoDB
-      await axios.post("http://localhost:5000/users", userInfo);
+      // 4️⃣ save to DB
+      await axios.post(`${API}/users`, userInfo);
+
+      // 5️⃣ get JWT
+      const jwtRes = await axios.post(`${API}/jwt`, {
+        email: formData.email,
+      });
+
+      localStorage.setItem("access-token", jwtRes.data.token);
 
       alert("Registration Successful!");
-      navigate("/");
+      navigate("/dashboard");
 
-      // reset form
+      // reset
       setFormData({
         email: "",
         name: "",
         avatar: null,
-        role: "",
         bloodGroup: "",
         districtId: "",
         upazila: "",
@@ -130,8 +130,8 @@ const Register = () => {
       });
       setFilteredUpazilas([]);
 
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error(error);
       alert("Registration Failed!");
     } finally {
       setLoading(false);
@@ -150,7 +150,6 @@ const Register = () => {
             onSubmit={handleSubmit}
             className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4"
           >
-            {/* Email */}
             <input
               required
               name="email"
@@ -161,7 +160,6 @@ const Register = () => {
               onChange={handleChange}
             />
 
-            {/* Name */}
             <input
               required
               name="name"
@@ -172,7 +170,6 @@ const Register = () => {
               onChange={handleChange}
             />
 
-            {/* Avatar */}
             <input
               required
               type="file"
@@ -186,20 +183,6 @@ const Register = () => {
               }
             />
 
-            {/* Role */}
-            <select
-              required
-              name="role"
-              className="select select-bordered"
-              value={formData.role}
-              onChange={handleChange}
-            >
-              <option value="">Choose Role</option>
-              <option value="donor">Donor</option>
-              <option value="volunteer">Volunteer</option>
-            </select>
-
-            {/* Blood Group */}
             <select
               required
               name="bloodGroup"
@@ -215,7 +198,6 @@ const Register = () => {
               ))}
             </select>
 
-            {/* District */}
             <select
               required
               name="districtId"
@@ -231,7 +213,6 @@ const Register = () => {
               ))}
             </select>
 
-            {/* Upazila */}
             <select
               required
               name="upazila"
@@ -247,7 +228,6 @@ const Register = () => {
               ))}
             </select>
 
-            {/* Password */}
             <input
               required
               name="password"
@@ -258,7 +238,6 @@ const Register = () => {
               onChange={handleChange}
             />
 
-            {/* Confirm Password */}
             <input
               required
               name="confirmPassword"
