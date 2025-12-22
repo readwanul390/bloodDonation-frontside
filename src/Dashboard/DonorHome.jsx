@@ -1,5 +1,4 @@
 import { useContext, useEffect, useState } from "react";
-import axios from "axios";
 import { AuthContext } from "../providers/AuthProvider";
 import axiosSecure from "../api/axiosSecure";
 
@@ -8,10 +7,14 @@ const DonorHome = () => {
   const [requests, setRequests] = useState([]);
 
   useEffect(() => {
+    if (!user?.email) return;
+
     axiosSecure
-      .get(`donation-requests/my/${user.email}`)
-      .then((res) => setRequests(res.data));
-  }, [user.email]);
+      .get(`/donation-requests/my/${user.email}?page=1&limit=3`)
+      .then((res) => {
+        setRequests(res.data.requests || []);
+      });
+  }, [user?.email]);
 
   return (
     <div>
@@ -19,7 +22,11 @@ const DonorHome = () => {
         Welcome, {user.displayName}
       </h2>
 
-      {requests.length > 0 && (
+      {requests.length === 0 ? (
+        <p className="text-gray-500">
+          You have not made any donation requests yet.
+        </p>
+      ) : (
         <>
           <h3 className="text-xl font-semibold mb-2">
             Recent Donation Requests
@@ -40,10 +47,12 @@ const DonorHome = () => {
                 <tr key={req._id}>
                   <td>{req.recipientName}</td>
                   <td>
-                    {req.recipientDistrict}, {req.recipientUpazila}
+                    {req.district}, {req.upazila}
                   </td>
                   <td>{req.donationDate}</td>
-                  <td>{req.donationStatus}</td>
+                  <td className="capitalize">
+                    {req.donationStatus}
+                  </td>
                 </tr>
               ))}
             </tbody>
