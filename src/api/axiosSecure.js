@@ -5,7 +5,7 @@ const axiosSecure = axios.create({
   baseURL: "${API}",
 });
 
-// 🔐 REQUEST interceptor
+
 axiosSecure.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("access-token");
