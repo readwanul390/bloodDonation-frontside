@@ -63,7 +63,7 @@ const DonationRequestDetails = () => {
       </h2>
 
       <p><b>Recipient Name:</b> {request.recipientName}</p>
-      <p><b>Location:</b> {request.district}, {request.upazila}</p>
+      <p><b>Location:</b> {request.recipientDistrict}, {request.recipientUpazila}</p>
       <p><b>Hospital:</b> {request.hospitalName}</p>
       <p><b>Address:</b> {request.address}</p>
       <p><b>Blood Group:</b> {request.bloodGroup}</p>
