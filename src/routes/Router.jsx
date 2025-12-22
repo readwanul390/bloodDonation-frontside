@@ -23,6 +23,7 @@ import DonationRequestDetails from "../Pages/DonationRequestDetails";
 import DonationRequests from "../Pages/DonationRequests";
 import Funding from "../Pages/Funding";
 import VolunteerHome from "../Dashboard/volunteer/Volunteer_Home";
+import EditDonationRequest from "../Dashboard/EditDonationRequest";
 
 
 
@@ -47,6 +48,10 @@ const Router = createBrowserRouter([
     children: [
       
       { index: true, element: <DonorHome /> },
+      {
+        path: "edit-donation/:id",
+        element: <EditDonationRequest />,
+      },
 
       // 🔹 COMMON
       { path: "profile", element: <Profile /> },
