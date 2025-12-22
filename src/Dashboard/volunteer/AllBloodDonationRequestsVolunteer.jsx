@@ -5,31 +5,31 @@ import axiosSecure from "../../api/axiosSecure";
 const AllBloodDonationRequestsVolunteer = () => {
   const [requests, setRequests] = useState([]);
   const [filter, setFilter] = useState("");
+  const [page, setPage] = useState(1);
+  const limit = 2;
+  const [total, setTotal] = useState(0);
+
+  const totalPages = Math.ceil(total / limit);
 
   const loadRequests = () => {
-    const url = filter
-      ? `/donation-requests?status=${filter}`
-      : `/donation-requests`;
+    const url = `/donation-requests?status=${filter}&page=${page}&limit=${limit}`;
 
-    axiosSecure.get(url).then((res) => setRequests(res.data));
+    axiosSecure.get(url).then((res) => {
+      setRequests(res.data.requests);
+      setTotal(res.data.total);
+    });
   };
 
   useEffect(() => {
     loadRequests();
-  }, [filter]);
+  }, [filter, page]);
 
-  /* ===== UPDATE STATUS (ONLY PERMISSION) ===== */
+  /* ===== UPDATE STATUS ===== */
   const updateStatus = (id, donationStatus) => {
     axiosSecure
-      .patch(`/donation-requests/status/${id}`, {
-        donationStatus,
-      })
+      .patch(`/donation-requests/status/${id}`, { donationStatus })
       .then(() => {
-        Swal.fire(
-          "Updated!",
-          "Donation status updated successfully.",
-          "success"
-        );
+        Swal.fire("Updated!", "Status updated successfully.", "success");
         loadRequests();
       });
   };
@@ -40,10 +40,13 @@ const AllBloodDonationRequestsVolunteer = () => {
         All Blood Donation Requests
       </h2>
 
-      {/* ===== FILTER ===== */}
+      {/* FILTER */}
       <select
         className="select select-bordered mb-4"
-        onChange={(e) => setFilter(e.target.value)}
+        onChange={(e) => {
+          setFilter(e.target.value);
+          setPage(1);
+        }}
       >
         <option value="">All</option>
         <option value="pending">Pending</option>
@@ -52,7 +55,7 @@ const AllBloodDonationRequestsVolunteer = () => {
         <option value="canceled">Canceled</option>
       </select>
 
-      {/* ===== TABLE ===== */}
+      {/* TABLE */}
       <table className="table bg-white">
         <thead>
           <tr>
@@ -76,61 +79,66 @@ const AllBloodDonationRequestsVolunteer = () => {
                   {req.requesterEmail}
                 </p>
               </td>
-
               <td>{req.recipientName}</td>
-
-              <td>
-                {req.district}, {req.upazila}
-              </td>
-
+              <td>{req.district}, {req.upazila}</td>
               <td>{req.donationDate}</td>
               <td>{req.donationTime}</td>
               <td>{req.bloodGroup}</td>
-
               <td className="capitalize">{req.donationStatus}</td>
 
-              {/* ===== SAME 3-DOT DROPDOWN (LIMITED) ===== */}
               <td className="text-center">
-                <div className="dropdown dropdown-end">
-                  <label tabIndex={0} className="btn btn-ghost btn-sm">
-                    ⋮
-                  </label>
-
-                  <ul
-                    tabIndex={0}
-                    className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-44"
-                  >
-                    {/* Volunteer can update status ONLY */}
-                    {req.donationStatus === "inprogress" && (
-                      <>
-                        <li>
-                          <button
-                            onClick={() =>
-                              updateStatus(req._id, "done")
-                            }
-                          >
-                            Mark as Done
-                          </button>
-                        </li>
-
-                        <li>
-                          <button
-                            onClick={() =>
-                              updateStatus(req._id, "canceled")
-                            }
-                          >
-                            Cancel
-                          </button>
-                        </li>
-                      </>
-                    )}
-                  </ul>
-                </div>
+                {req.donationStatus === "inprogress" && (
+                  <>
+                    <button
+                      className="btn btn-xs mr-2"
+                      onClick={() => updateStatus(req._id, "done")}
+                    >
+                      Done
+                    </button>
+                    <button
+                      className="btn btn-xs btn-error"
+                      onClick={() => updateStatus(req._id, "canceled")}
+                    >
+                      Cancel
+                    </button>
+                  </>
+                )}
               </td>
             </tr>
           ))}
         </tbody>
       </table>
+
+      {/* PAGINATION */}
+      <div className="flex justify-center mt-6 gap-2">
+        <button
+          className="btn btn-sm"
+          disabled={page === 1}
+          onClick={() => setPage(page - 1)}
+        >
+          Prev
+        </button>
+
+        {[...Array(totalPages).keys()].map((n) => (
+          <button
+            key={n}
+            onClick={() => setPage(n + 1)}
+            className={`btn btn-sm ${
+              page === n + 1 ? "btn-primary" : ""
+            }`}
+          >
+            {n + 1}
+          </button>
+        ))}
+
+        <button
+          className="btn btn-sm"
+          disabled={page === totalPages}
+          onClick={() => setPage(page + 1)}
+        >
+          Next
+        </button>
+      </div>
     </div>
   );
 };

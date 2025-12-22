@@ -1,170 +1,119 @@
-import { useEffect, useState } from "react";
-import Swal from "sweetalert2";
+import { useEffect, useState, useContext } from "react";
+import axiosSecure from "../api/axiosSecure";
+import { AuthContext } from "../providers/AuthProvider";
 
-const AllBloodDonationRequests = () => {
+const MyDonationRequests = () => {
+  const { user } = useContext(AuthContext);
+
   const [requests, setRequests] = useState([]);
-  const [filter, setFilter] = useState("all");
-  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const limit = 2;
+  const [total, setTotal] = useState(0);
 
-  /* ================= FETCH ALL REQUESTS ================= */
-  useEffect(() => {
-    setLoading(true);
+  const totalPages = Math.ceil(total / limit);
 
-    const url =
-      filter === "all"
-        ? "http://localhost:5000/donation-requests"
-        : `http://localhost:5000/donation-requests?status=${filter}`;
+  const loadRequests = () => {
+    if (!user?.email) return;
 
-    fetch(url)
-      .then((res) => res.json())
-      .then((data) => {
-        setRequests(data);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, [filter]);
-
-  /* ================= DELETE ================= */
-  const handleDelete = (id) => {
-    Swal.fire({
-      title: "Are you sure?",
-      text: "This donation request will be deleted!",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Yes, delete",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        fetch(`http://localhost:5000/donation-requests/${id}`, {
-          method: "DELETE",
-        })
-          .then((res) => res.json())
-          .then(() => {
-            setRequests((prev) =>
-              prev.filter((req) => req._id !== id)
-            );
-            Swal.fire("Deleted!", "Request deleted.", "success");
-          });
-      }
-    });
-  };
-
-  /* ================= UPDATE STATUS ================= */
-  const updateStatus = (id, donationStatus) => {
-    fetch(`http://localhost:5000/donation-requests/status/${id}`, {
-      method: "PATCH",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ donationStatus }),
-    })
-      .then((res) => res.json())
-      .then(() => {
-        setRequests((prev) =>
-          prev.map((req) =>
-            req._id === id ? { ...req, donationStatus } : req
-          )
+    axiosSecure
+      .get(
+        `/donation-requests/my/${user.email}?page=${page}&limit=${limit}`
+      )
+      .then((res) => {
+        // 🛡 SAFETY CHECK
+        setRequests(
+          Array.isArray(res.data.requests)
+            ? res.data.requests
+            : []
         );
-
-        Swal.fire("Updated!", "Status updated successfully.", "success");
+        setTotal(res.data.total || 0);
       });
   };
 
-  if (loading) {
-    return <p className="text-center mt-10">Loading...</p>;
-  }
+  useEffect(() => {
+    loadRequests();
+  }, [user, page]);
 
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-semibold mb-4">
-        All Blood Donation Requests
+    <div className="p-6 bg-white rounded shadow">
+      <h2 className="text-2xl font-bold mb-4">
+        My Donation Requests
       </h2>
 
-      {/* ================= FILTER ================= */}
-      <div className="mb-4">
-        <select
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          className="border px-3 py-2 rounded"
-        >
-          <option value="all">All</option>
-          <option value="pending">Pending</option>
-          <option value="inprogress">In Progress</option>
-          <option value="done">Done</option>
-          <option value="canceled">Canceled</option>
-        </select>
-      </div>
+      {/* ===== TABLE ===== */}
+      <table className="table">
+        <thead>
+          <tr>
+            <th>Recipient</th>
+            <th>Location</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Blood</th>
+            <th>Status</th>
+          </tr>
+        </thead>
 
-      {/* ================= TABLE ================= */}
-      {requests.length === 0 ? (
-        <p>No donation requests found.</p>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="table w-full border">
-            <thead className="bg-gray-100">
-              <tr>
-                <th>Requester</th>
-                <th>Recipient</th>
-                <th>Location</th>
-                <th>Date</th>
-                <th>Time</th>
-                <th>Blood</th>
-                <th>Status</th>
-                <th>Actions</th>
+        <tbody>
+          {requests.length === 0 && (
+            <tr>
+              <td colSpan="6" className="text-center py-6">
+                No donation requests found
+              </td>
+            </tr>
+          )}
+
+          {Array.isArray(requests) &&
+            requests.map((req) => (
+              <tr key={req._id}>
+                <td>{req.recipientName}</td>
+                <td>
+                  {req.district}, {req.upazila}
+                </td>
+                <td>{req.donationDate}</td>
+                <td>{req.donationTime}</td>
+                <td>{req.bloodGroup}</td>
+                <td className="capitalize">
+                  {req.donationStatus}
+                </td>
               </tr>
-            </thead>
+            ))}
+        </tbody>
+      </table>
 
-            <tbody>
-              {requests.map((req) => (
-                <tr key={req._id} className="border-t">
-                  <td>
-                    <p>{req.requesterName}</p>
-                    <p className="text-sm text-gray-500">
-                      {req.requesterEmail}
-                    </p>
-                  </td>
-                  <td>{req.recipientName}</td>
-                  <td>
-                    {req.district}, {req.upazila}
-                  </td>
-                  <td>{req.donationDate}</td>
-                  <td>{req.donationTime}</td>
-                  <td>{req.bloodGroup}</td>
-                  <td className="capitalize">
-                    {req.donationStatus}
-                  </td>
+      {/* ===== PAGINATION ===== */}
+      {totalPages > 1 && (
+        <div className="flex justify-center mt-6 gap-2">
+          <button
+            className="btn btn-sm"
+            disabled={page === 1}
+            onClick={() => setPage(page - 1)}
+          >
+            Prev
+          </button>
 
-                  <td className="space-x-2">
-                    <button
-                      onClick={() =>
-                        updateStatus(req._id, "done")
-                      }
-                      className="px-2 py-1 bg-green-600 text-white rounded"
-                    >
-                      Done
-                    </button>
+          {[...Array(totalPages).keys()].map((num) => (
+            <button
+              key={num}
+              onClick={() => setPage(num + 1)}
+              className={`btn btn-sm ${
+                page === num + 1 ? "btn-primary" : ""
+              }`}
+            >
+              {num + 1}
+            </button>
+          ))}
 
-                    <button
-                      onClick={() =>
-                        updateStatus(req._id, "canceled")
-                      }
-                      className="px-2 py-1 bg-gray-600 text-white rounded"
-                    >
-                      Cancel
-                    </button>
-
-                    <button
-                      onClick={() => handleDelete(req._id)}
-                      className="px-2 py-1 bg-red-500 text-white rounded"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <button
+            className="btn btn-sm"
+            disabled={page === totalPages}
+            onClick={() => setPage(page + 1)}
+          >
+            Next
+          </button>
         </div>
       )}
     </div>
   );
 };
 
-export default AllBloodDonationRequests;
+export default MyDonationRequests;

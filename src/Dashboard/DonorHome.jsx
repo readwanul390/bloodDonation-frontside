@@ -1,14 +1,15 @@
 import { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import { AuthContext } from "../providers/AuthProvider";
+import axiosSecure from "../api/axiosSecure";
 
 const DonorHome = () => {
   const { user } = useContext(AuthContext);
   const [requests, setRequests] = useState([]);
 
   useEffect(() => {
-    axios
-      .get(`http://localhost:5000/donation-requests/my/${user.email}`)
+    axiosSecure
+      .get(`donation-requests/my/${user.email}`)
       .then((res) => setRequests(res.data));
   }, [user.email]);
 
