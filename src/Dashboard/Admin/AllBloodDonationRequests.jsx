@@ -111,7 +111,7 @@ const AllBloodDonationRequestsAdmin = () => {
                 <td>{req.recipientName}</td>
 
                 <td>
-                  {req.district}, {req.upazila}
+                  {req.recipientDistrict}, {req.recipientUpazila}
                 </td>
 
                 <td>{req.donationDate}</td>

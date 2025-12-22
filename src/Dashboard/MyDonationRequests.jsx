@@ -1,11 +1,12 @@
-import { useEffect, useState, useContext } from "react";
-import axiosSecure from "../api/axiosSecure";
+import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../providers/AuthProvider";
+import axiosSecure from "../api/axiosSecure";
 
 const MyDonationRequests = () => {
   const { user } = useContext(AuthContext);
 
   const [requests, setRequests] = useState([]);
+  const [status, setStatus] = useState("");
   const [page, setPage] = useState(1);
   const limit = 2;
   const [total, setTotal] = useState(0);
@@ -17,22 +18,17 @@ const MyDonationRequests = () => {
 
     axiosSecure
       .get(
-        `/donation-requests/my/${user.email}?page=${page}&limit=${limit}`
+        `/donation-requests/my/${user.email}?status=${status}&page=${page}&limit=${limit}`
       )
       .then((res) => {
-        // 🛡 SAFETY CHECK
-        setRequests(
-          Array.isArray(res.data.requests)
-            ? res.data.requests
-            : []
-        );
+        setRequests(res.data.requests || []);
         setTotal(res.data.total || 0);
       });
   };
 
   useEffect(() => {
     loadRequests();
-  }, [user, page]);
+  }, [user?.email, status, page]);
 
   return (
     <div className="p-6 bg-white rounded shadow">
@@ -40,45 +36,67 @@ const MyDonationRequests = () => {
         My Donation Requests
       </h2>
 
+      {/* ===== FILTER ===== */}
+      <div className="mb-4">
+        <select
+          className="select select-bordered"
+          value={status}
+          onChange={(e) => {
+            setStatus(e.target.value);
+            setPage(1);
+          }}
+        >
+          <option value="">All</option>
+          <option value="pending">Pending</option>
+          <option value="inprogress">In Progress</option>
+          <option value="done">Done</option>
+          <option value="canceled">Canceled</option>
+        </select>
+      </div>
+
       {/* ===== TABLE ===== */}
-      <table className="table">
-        <thead>
-          <tr>
-            <th>Recipient</th>
-            <th>Location</th>
-            <th>Date</th>
-            <th>Time</th>
-            <th>Blood</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {requests.length === 0 && (
+      <div className="overflow-x-auto">
+        <table className="table">
+          <thead>
             <tr>
-              <td colSpan="6" className="text-center py-6">
-                No donation requests found
-              </td>
+              <th>Recipient</th>
+              <th>Location</th>
+              <th>Date</th>
+              <th>Time</th>
+              <th>Blood</th>
+              <th>Status</th>
             </tr>
-          )}
+          </thead>
 
-          {Array.isArray(requests) &&
-            requests.map((req) => (
+          <tbody>
+            {requests.length === 0 && (
+              <tr>
+                <td colSpan="6" className="text-center py-6">
+                  No donation requests found
+                </td>
+              </tr>
+            )}
+
+            {requests.map((req) => (
               <tr key={req._id}>
                 <td>{req.recipientName}</td>
+
                 <td>
-                  {req.district}, {req.upazila}
+                  {req.recipientDistrict || "—"}, {req.recipientUpazila || "—"}
                 </td>
+
                 <td>{req.donationDate}</td>
                 <td>{req.donationTime}</td>
                 <td>{req.bloodGroup}</td>
+
                 <td className="capitalize">
                   {req.donationStatus}
                 </td>
               </tr>
             ))}
-        </tbody>
-      </table>
+          </tbody>
+        </table>
+      </div>
 
       {/* ===== PAGINATION ===== */}
       {totalPages > 1 && (

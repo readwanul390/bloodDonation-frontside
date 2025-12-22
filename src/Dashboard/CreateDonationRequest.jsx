@@ -1,8 +1,8 @@
 import { useContext, useEffect, useState } from "react";
-import axios from "axios";
 import districts from "../data/districts";
 import upazilasData from "../data/upazilas";
 import { AuthContext } from "../providers/AuthProvider";
+import axiosSecure from "../api/axiosSecure";
 
 const CreateDonationRequest = () => {
   const { user } = useContext(AuthContext);
@@ -22,41 +22,56 @@ const CreateDonationRequest = () => {
     requestMessage: "",
   });
 
-  // Load DB user (for status check)
+  /* ===== Load DB user (status check) ===== */
   useEffect(() => {
-    if (user?.email) {
-      axios
-        .get(`http://localhost:5000/users/role/${user.email}`)
-        .then((res) => setDbUser(res.data));
-    }
-  }, [user]);
+    if (!user?.email) return;
 
+    axiosSecure
+      .get(`/users/role/${user.email}`)
+      .then((res) => setDbUser(res.data))
+      .catch(() => {});
+  }, [user?.email]);
+
+  /* ===== Blocked user ===== */
   if (dbUser?.status === "blocked") {
     return (
-      <p className="text-red-600">
+      <p className="text-red-600 font-semibold">
         You are blocked. You cannot create donation requests.
       </p>
     );
   }
 
+  /* ===== Handle form change ===== */
   const handleChange = (e) => {
     const { name, value } = e.target;
 
     setFormData((prev) => {
-      const updated = { ...prev, [name]: value };
+      let updated = { ...prev, [name]: value };
 
+      // 🔥 District selected
       if (name === "recipientDistrict") {
+        const selectedDistrict = districts.find(
+          (d) => d.id === value
+        );
+
         const filtered = upazilasData.filter(
           (u) => u.district_id === value
         );
+
         setFilteredUpazilas(filtered);
-        updated.recipientUpazila = "";
+
+        updated = {
+          ...prev,
+          recipientDistrict: selectedDistrict?.name || "",
+          recipientUpazila: "",
+        };
       }
 
       return updated;
     });
   };
 
+  /* ===== Submit form ===== */
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -67,12 +82,24 @@ const CreateDonationRequest = () => {
     };
 
     try {
-      await axios.post(
-        "http://localhost:5000/donation-requests",
-        donationRequest
-      );
+      await axiosSecure.post("/donation-requests", donationRequest);
 
       alert("Donation request created successfully!");
+
+      // reset form
+      setFormData({
+        recipientName: "",
+        recipientDistrict: "",
+        recipientUpazila: "",
+        hospitalName: "",
+        address: "",
+        bloodGroup: "",
+        donationDate: "",
+        donationTime: "",
+        requestMessage: "",
+      });
+
+      setFilteredUpazilas([]);
       e.target.reset();
     } catch (err) {
       console.error(err);
@@ -87,12 +114,14 @@ const CreateDonationRequest = () => {
       </h2>
 
       <form onSubmit={handleSubmit} className="grid gap-4">
+        {/* requester name */}
         <input
           value={user.displayName}
           disabled
           className="input input-bordered bg-gray-100"
         />
 
+        {/* requester email */}
         <input
           value={user.email}
           disabled
@@ -107,6 +136,7 @@ const CreateDonationRequest = () => {
           required
         />
 
+        {/* District */}
         <select
           name="recipientDistrict"
           className="select select-bordered"
@@ -121,6 +151,7 @@ const CreateDonationRequest = () => {
           ))}
         </select>
 
+        {/* Upazila */}
         <select
           name="recipientUpazila"
           className="select select-bordered"
@@ -151,6 +182,7 @@ const CreateDonationRequest = () => {
           required
         />
 
+        {/* Blood group */}
         <select
           name="bloodGroup"
           className="select select-bordered"
@@ -158,8 +190,10 @@ const CreateDonationRequest = () => {
           required
         >
           <option value="">Blood Group</option>
-          {["A+","A-","B+","B-","AB+","AB-","O+","O-"].map(bg => (
-            <option key={bg} value={bg}>{bg}</option>
+          {["A+","A-","B+","B-","AB+","AB-","O+","O-"].map((bg) => (
+            <option key={bg} value={bg}>
+              {bg}
+            </option>
           ))}
         </select>
 

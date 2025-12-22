@@ -80,7 +80,7 @@ const AllBloodDonationRequestsVolunteer = () => {
                 </p>
               </td>
               <td>{req.recipientName}</td>
-              <td>{req.district}, {req.upazila}</td>
+              <td>{req.reciepientDistrict}, {req.recipientUpazila}</td>
               <td>{req.donationDate}</td>
               <td>{req.donationTime}</td>
               <td>{req.bloodGroup}</td>

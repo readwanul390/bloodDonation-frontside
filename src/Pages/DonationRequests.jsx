@@ -1,25 +1,32 @@
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../providers/AuthProvider";
 
 const DonationRequests = () => {
   const [requests, setRequests] = useState([]);
-  const { user } = useContext(AuthContext);
+  const [page, setPage] = useState(1);
+  const limit = 6;
+
+  const [total, setTotal] = useState(0);
+  const totalPages = Math.ceil(total / limit);
+
   const navigate = useNavigate();
 
+  /* ===== Load pending requests (public) ===== */
   useEffect(() => {
     axios
-      .get("http://localhost:5000/donation-requests?status=pending")
-      .then(res => setRequests(res.data));
-  }, []);
+      .get(
+        `http://localhost:5000/donation-requests?status=pending&page=${page}&limit=${limit}`
+      )
+      .then((res) => {
+        // 🔐 SAFE FIX (array always)
+        setRequests(res.data.requests || []);
+        setTotal(res.data.total || 0);
+      });
+  }, [page]);
 
   const handleView = (id) => {
-    if (!user) {
-      navigate("/login");
-    } else {
-      navigate(`/donation-request/${id}`);
-    }
+    navigate(`/donation-request/${id}`);
   };
 
   return (
@@ -33,33 +40,72 @@ const DonationRequests = () => {
           No pending donation requests available.
         </p>
       ) : (
-        <div className="grid md:grid-cols-3 gap-6">
-          {requests.map(req => (
-            <div key={req._id} className="card bg-white shadow p-4">
-              <h3 className="text-xl font-semibold">
-                {req.recipientName}
-              </h3>
+        <>
+          {/* ===== CARD GRID ===== */}
+          <div className="grid md:grid-cols-3 gap-6">
+            {requests.map((req) => (
+              <div
+                key={req._id}
+                className="card bg-white shadow p-4"
+              >
+                <h3 className="text-xl font-semibold">
+                  {req.recipientName}
+                </h3>
 
-              <p className="text-sm text-gray-600">
-                📍 {req.district}, {req.upazila}
-              </p>
+                <p className="text-sm text-gray-600">
+                  📍 {req.recipientDistrict}, {req.recipientUpazila}
+                </p>
 
-              <p className="mt-2">
-                🩸 <strong>{req.bloodGroup}</strong>
-              </p>
+                <p className="mt-2">
+                  🩸 <strong>{req.bloodGroup}</strong>
+                </p>
 
-              <p>📅 {req.donationDate}</p>
-              <p>⏰ {req.donationTime}</p>
+                <p>📅 {req.donationDate}</p>
+                <p>⏰ {req.donationTime}</p>
+
+                <button
+                  onClick={() => handleView(req._id)}
+                  className="btn btn-sm bg-red-600 text-white mt-3"
+                >
+                  View
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {/* ===== PAGINATION ===== */}
+          {totalPages > 1 && (
+            <div className="flex justify-center mt-8 gap-2">
+              <button
+                className="btn btn-sm"
+                disabled={page === 1}
+                onClick={() => setPage(page - 1)}
+              >
+                Prev
+              </button>
+
+              {[...Array(totalPages).keys()].map((num) => (
+                <button
+                  key={num}
+                  onClick={() => setPage(num + 1)}
+                  className={`btn btn-sm ${
+                    page === num + 1 ? "btn-primary" : ""
+                  }`}
+                >
+                  {num + 1}
+                </button>
+              ))}
 
               <button
-                onClick={() => handleView(req._id)}
-                className="btn btn-sm bg-red-600 text-white mt-3"
+                className="btn btn-sm"
+                disabled={page === totalPages}
+                onClick={() => setPage(page + 1)}
               >
-                View
+                Next
               </button>
             </div>
-          ))}
-        </div>
+          )}
+        </>
       )}
     </div>
   );
