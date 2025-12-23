@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axiosSecure from "../../api/axiosSecure";
+import axios from "axios";
 
 const AllUsers = () => {
   const [users, setUsers] = useState([]);
@@ -10,33 +10,38 @@ const AllUsers = () => {
   const [total, setTotal] = useState(0);
   const totalPages = Math.ceil(total / limit);
 
-  const loadUsers = () => {
-    let url = `/users?page=${page}&limit=${limit}`;
+  
+  const BASE_URL = import.meta.env.VITE_API_URL;
 
-    if (filter) {
-      url += `&status=${filter}`;
+  const loadUsers = async () => {
+    try {
+      const res = await axios.get(`${BASE_URL}/users`, {
+        params: {
+          page,
+          limit,
+          status: filter || undefined,
+        },
+      });
+
+      setUsers(res.data.users || []);
+      setTotal(res.data.total || 0);
+    } catch (err) {
+      console.error(err);
     }
-
-    axiosSecure.get(url).then((res) => {
-      setUsers(res.data.users);
-      setTotal(res.data.total);
-    });
   };
 
   useEffect(() => {
     loadUsers();
   }, [filter, page]);
 
-  const updateStatus = (id, status) => {
-    axiosSecure
-      .patch(`/users/status/${id}`, { status })
-      .then(() => loadUsers());
+  const updateStatus = async (id, status) => {
+    await axios.patch(`${BASE_URL}/users/status/${id}`, { status });
+    loadUsers();
   };
 
-  const updateRole = (id, role) => {
-    axiosSecure
-      .patch(`/users/role/${id}`, { role })
-      .then(() => loadUsers());
+  const updateRole = async (id, role) => {
+    await axios.patch(`${BASE_URL}/users/role/${id}`, { role });
+    loadUsers();
   };
 
   return (
@@ -49,7 +54,7 @@ const AllUsers = () => {
         value={filter}
         onChange={(e) => {
           setFilter(e.target.value);
-          setPage(1); // reset page on filter
+          setPage(1);
         }}
       >
         <option value="">All</option>
@@ -72,7 +77,7 @@ const AllUsers = () => {
 
         <tbody>
           {users
-            .filter((user) => user.role !== "admin") // admin hidden
+            .filter((user) => user.role !== "admin")
             .map((user) => (
               <tr key={user._id}>
                 <td>
@@ -87,7 +92,7 @@ const AllUsers = () => {
                 <td className="capitalize">{user.role}</td>
                 <td className="capitalize">{user.status}</td>
 
-                {/* ===== ACTION DROPDOWN ===== */}
+                {/* ===== ACTIONS ===== */}
                 <td className="text-center">
                   <div className="dropdown dropdown-end">
                     <label tabIndex={0} className="btn btn-ghost btn-sm">
@@ -150,35 +155,37 @@ const AllUsers = () => {
       </table>
 
       {/* ===== PAGINATION ===== */}
-      <div className="flex justify-center gap-2 mt-6">
-        <button
-          className="btn btn-sm"
-          disabled={page === 1}
-          onClick={() => setPage(page - 1)}
-        >
-          Prev
-        </button>
-
-        {[...Array(totalPages).keys()].map((num) => (
+      {totalPages > 1 && (
+        <div className="flex justify-center gap-2 mt-6">
           <button
-            key={num}
-            className={`btn btn-sm ${
-              page === num + 1 ? "btn-active" : ""
-            }`}
-            onClick={() => setPage(num + 1)}
+            className="btn btn-sm"
+            disabled={page === 1}
+            onClick={() => setPage(page - 1)}
           >
-            {num + 1}
+            Prev
           </button>
-        ))}
 
-        <button
-          className="btn btn-sm"
-          disabled={page === totalPages}
-          onClick={() => setPage(page + 1)}
-        >
-          Next
-        </button>
-      </div>
+          {[...Array(totalPages).keys()].map((num) => (
+            <button
+              key={num}
+              className={`btn btn-sm ${
+                page === num + 1 ? "btn-active" : ""
+              }`}
+              onClick={() => setPage(num + 1)}
+            >
+              {num + 1}
+            </button>
+          ))}
+
+          <button
+            className="btn btn-sm"
+            disabled={page === totalPages}
+            onClick={() => setPage(page + 1)}
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
   );
 };

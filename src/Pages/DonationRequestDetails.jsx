@@ -10,15 +10,16 @@ const DonationRequestDetails = () => {
 
   const [request, setRequest] = useState(null);
   const [role, setRole] = useState(null);
+  const [openModal, setOpenModal] = useState(false);
 
-  // 🔹 load donation request (public)
+  /* 🔹 load donation request */
   useEffect(() => {
     axiosSecure
       .get(`/donation-requests/${id}`)
       .then((res) => setRequest(res.data));
   }, [id]);
 
-  // 🔹 load user role
+  /* 🔹 load user role */
   useEffect(() => {
     if (user?.email) {
       axiosSecure
@@ -27,31 +28,31 @@ const DonationRequestDetails = () => {
     }
   }, [user]);
 
-  // 🔹 volunteer accept donation
-  const handleDonate = async () => {
-    const confirm = await Swal.fire({
-      title: "Confirm Donation?",
-      text: "Are you sure you want to accept this donation request?",
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonText: "Yes, Accept",
-    });
-
-    if (!confirm.isConfirmed) return;
+  /* 🔹 confirm donation */
+  const handleConfirmDonation = async (e) => {
+    e.preventDefault();
 
     try {
       await axiosSecure.patch(
-        `/donation-requests/donate/${id}`
+        `/donation-requests/donate/${id}`,
+        {
+          donorName: user.displayName,
+          donorEmail: user.email,
+        }
       );
 
-      Swal.fire("Success", "Donation request accepted!", "success");
+      Swal.fire("Success", "Donation confirmed!", "success");
 
       setRequest({
         ...request,
         donationStatus: "inprogress",
+        donorName: user.displayName,
+        donorEmail: user.email,
       });
+
+      setOpenModal(false);
     } catch (error) {
-      Swal.fire("Error", "You are not allowed to perform this action", "error");
+      Swal.fire("Error", "Something went wrong", "error");
     }
   };
 
@@ -64,17 +65,17 @@ const DonationRequestDetails = () => {
         Donation Request Details
       </h2>
 
+      {/* 🔹 Request Information */}
       <p><b>Recipient Name:</b> {request.recipientName}</p>
       <p>
-        <b>Location:</b> {request.recipientDistrict},{" "}
-        {request.recipientUpazila}
+        <b>Location:</b>{" "}
+        {request.recipientDistrict}, {request.recipientUpazila}
       </p>
       <p><b>Hospital:</b> {request.hospitalName}</p>
       <p><b>Address:</b> {request.address}</p>
       <p><b>Blood Group:</b> {request.bloodGroup}</p>
       <p><b>Date:</b> {request.donationDate}</p>
       <p><b>Time:</b> {request.donationTime}</p>
-
       <p className="mt-2">
         <b>Status:</b>{" "}
         <span className="capitalize">
@@ -82,16 +83,70 @@ const DonationRequestDetails = () => {
         </span>
       </p>
 
-      {/* 🔥 Accept button → ONLY volunteer & pending */}
+      {/* 🔥 Donate Button (Volunteer + Pending only) */}
       {request.donationStatus === "pending" &&
         role === "volunteer" && (
           <button
-            onClick={handleDonate}
+            onClick={() => setOpenModal(true)}
             className="btn btn-error mt-6"
           >
-            Accept Donation
+            Donate
           </button>
         )}
+
+      {/* ================= MODAL ================= */}
+      {openModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
+          <div className="bg-white w-full max-w-md rounded p-6">
+            <h3 className="text-xl font-bold mb-4">
+              Confirm Donation
+            </h3>
+
+            <form onSubmit={handleConfirmDonation} className="space-y-4">
+              <div>
+                <label className="block mb-1 font-medium">
+                  Donor Name
+                </label>
+                <input
+                  type="text"
+                  value={user.displayName}
+                  readOnly
+                  className="input input-bordered w-full bg-gray-100"
+                />
+              </div>
+
+              <div>
+                <label className="block mb-1 font-medium">
+                  Donor Email
+                </label>
+                <input
+                  type="email"
+                  value={user.email}
+                  readOnly
+                  className="input input-bordered w-full bg-gray-100"
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setOpenModal(false)}
+                  className="btn btn-outline"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="btn btn-error"
+                >
+                  Confirm Donation
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* ================= END MODAL ================= */}
     </div>
   );
 };

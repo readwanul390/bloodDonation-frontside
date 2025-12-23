@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
-import axiosSecure from "../../api/axiosSecure";
+import axios from "axios";
 
 const AllBloodDonationRequestsAdmin = () => {
   const [requests, setRequests] = useState([]);
@@ -11,14 +11,28 @@ const AllBloodDonationRequestsAdmin = () => {
 
   const totalPages = Math.ceil(total / limit);
 
-  // ===== LOAD REQUESTS WITH PAGINATION =====
-  const loadRequests = () => {
-    const url = `/donation-requests?status=${filter}&page=${page}&limit=${limit}`;
+  
+  const BASE_URL = import.meta.env.VITE_API_URL;
 
-    axiosSecure.get(url).then((res) => {
-      setRequests(res.data.requests);
-      setTotal(res.data.total);
-    });
+ 
+  const loadRequests = async () => {
+    try {
+      const res = await axios.get(
+        `${BASE_URL}/donation-requests`,
+        {
+          params: {
+            status: filter,
+            page,
+            limit,
+          },
+        }
+      );
+
+      setRequests(res.data.requests || []);
+      setTotal(res.data.total || 0);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   useEffect(() => {
@@ -26,13 +40,19 @@ const AllBloodDonationRequestsAdmin = () => {
   }, [filter, page]);
 
   // ===== UPDATE STATUS =====
-  const updateStatus = (id, donationStatus) => {
-    axiosSecure
-      .patch(`/donation-requests/status/${id}`, { donationStatus })
-      .then(() => {
-        Swal.fire("Updated!", "Status updated successfully.", "success");
-        loadRequests();
-      });
+  const updateStatus = async (id, donationStatus) => {
+    try {
+      await axios.patch(
+        `${BASE_URL}/donation-requests/status/${id}`,
+        { donationStatus }
+      );
+
+      Swal.fire("Updated!", "Status updated successfully.", "success");
+      loadRequests();
+    } catch (err) {
+      console.error(err);
+      Swal.fire("Error", "Failed to update status", "error");
+    }
   };
 
   // ===== DELETE REQUEST =====
@@ -43,12 +63,23 @@ const AllBloodDonationRequestsAdmin = () => {
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "Yes, delete it",
-    }).then((result) => {
+    }).then(async (result) => {
       if (result.isConfirmed) {
-        axiosSecure.delete(`/donation-requests/${id}`).then(() => {
-          Swal.fire("Deleted!", "Request deleted successfully.", "success");
+        try {
+          await axios.delete(
+            `${BASE_URL}/donation-requests/${id}`
+          );
+
+          Swal.fire(
+            "Deleted!",
+            "Request deleted successfully.",
+            "success"
+          );
           loadRequests();
-        });
+        } catch (err) {
+          console.error(err);
+          Swal.fire("Error", "Delete failed", "error");
+        }
       }
     });
   };
@@ -62,6 +93,7 @@ const AllBloodDonationRequestsAdmin = () => {
       {/* ===== FILTER ===== */}
       <select
         className="select select-bordered mb-4"
+        value={filter}
         onChange={(e) => {
           setFilter(e.target.value);
           setPage(1);
@@ -109,16 +141,18 @@ const AllBloodDonationRequestsAdmin = () => {
                 </td>
 
                 <td>{req.recipientName}</td>
-
                 <td>
-                  {req.recipientDistrict}, {req.recipientUpazila}
+                  {req.recipientDistrict},{" "}
+                  {req.recipientUpazila}
                 </td>
 
                 <td>{req.donationDate}</td>
                 <td>{req.donationTime}</td>
                 <td>{req.bloodGroup}</td>
 
-                <td className="capitalize">{req.donationStatus}</td>
+                <td className="capitalize">
+                  {req.donationStatus}
+                </td>
 
                 {/* ===== ACTIONS ===== */}
                 <td className="text-center">
@@ -146,7 +180,10 @@ const AllBloodDonationRequestsAdmin = () => {
                           <li>
                             <button
                               onClick={() =>
-                                updateStatus(req._id, "canceled")
+                                updateStatus(
+                                  req._id,
+                                  "canceled"
+                                )
                               }
                             >
                               Cancel Request
@@ -157,7 +194,9 @@ const AllBloodDonationRequestsAdmin = () => {
 
                       <li>
                         <button
-                          onClick={() => deleteRequest(req._id)}
+                          onClick={() =>
+                            deleteRequest(req._id)
+                          }
                           className="text-red-600"
                         >
                           Delete Request

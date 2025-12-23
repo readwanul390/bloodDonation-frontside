@@ -97,22 +97,16 @@ const Register = () => {
         email: formData.email,
         name: formData.name,
         avatar: avatarUrl,
-        role: "donor", // 🔒 FIXED (no frontend role abuse)
+        role: "donor",          // 🔒 fixed
         bloodGroup: formData.bloodGroup,
         district: selectedDistrict?.name,
         upazila: formData.upazila,
         status: "active",
+        createdAt: new Date(),
       };
 
-      // 4️⃣ save to DB
+      // 4️⃣ save to DB (NO JWT)
       await axios.post(`${API}/users`, userInfo);
-
-      // 5️⃣ get JWT
-      const jwtRes = await axios.post(`${API}/jwt`, {
-        email: formData.email,
-      });
-
-      localStorage.setItem("access-token", jwtRes.data.token);
 
       alert("Registration Successful!");
       navigate("/dashboard");

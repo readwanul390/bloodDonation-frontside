@@ -2,13 +2,15 @@ import { useContext, useEffect, useState } from "react";
 import districts from "../data/districts";
 import upazilasData from "../data/upazilas";
 import { AuthContext } from "../providers/AuthProvider";
-import axiosSecure from "../api/axiosSecure";
+import axios from "axios";
 
 const CreateDonationRequest = () => {
   const { user } = useContext(AuthContext);
 
   const [dbUser, setDbUser] = useState(null);
   const [filteredUpazilas, setFilteredUpazilas] = useState([]);
+
+  const API_URL = import.meta.env.VITE_API_URL;
 
   const [formData, setFormData] = useState({
     recipientName: "",
@@ -26,11 +28,11 @@ const CreateDonationRequest = () => {
   useEffect(() => {
     if (!user?.email) return;
 
-    axiosSecure
-      .get(`/users/role/${user.email}`)
+    axios
+      .get(`${API_URL}/users/role/${user.email}`)
       .then((res) => setDbUser(res.data))
       .catch(() => {});
-  }, [user?.email]);
+  }, [user?.email, API_URL]);
 
   /* ===== Blocked user ===== */
   if (dbUser?.status === "blocked") {
@@ -48,7 +50,6 @@ const CreateDonationRequest = () => {
     setFormData((prev) => {
       let updated = { ...prev, [name]: value };
 
-      // 🔥 District selected
       if (name === "recipientDistrict") {
         const selectedDistrict = districts.find(
           (d) => d.id === value
@@ -82,11 +83,13 @@ const CreateDonationRequest = () => {
     };
 
     try {
-      await axiosSecure.post("/donation-requests", donationRequest);
+      await axios.post(
+        `${API_URL}/donation-requests`,
+        donationRequest
+      );
 
       alert("Donation request created successfully!");
 
-      // reset form
       setFormData({
         recipientName: "",
         recipientDistrict: "",
@@ -114,14 +117,12 @@ const CreateDonationRequest = () => {
       </h2>
 
       <form onSubmit={handleSubmit} className="grid gap-4">
-        {/* requester name */}
         <input
           value={user.displayName}
           disabled
           className="input input-bordered bg-gray-100"
         />
 
-        {/* requester email */}
         <input
           value={user.email}
           disabled
@@ -136,7 +137,6 @@ const CreateDonationRequest = () => {
           required
         />
 
-        {/* District */}
         <select
           name="recipientDistrict"
           className="select select-bordered"
@@ -151,7 +151,6 @@ const CreateDonationRequest = () => {
           ))}
         </select>
 
-        {/* Upazila */}
         <select
           name="recipientUpazila"
           className="select select-bordered"
@@ -182,7 +181,6 @@ const CreateDonationRequest = () => {
           required
         />
 
-        {/* Blood group */}
         <select
           name="bloodGroup"
           className="select select-bordered"

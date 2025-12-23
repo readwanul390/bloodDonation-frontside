@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import axiosSecure from "../api/axiosSecure";
-
+import axios from "axios";
 
 const EditDonationRequest = () => {
   const { id } = useParams();
@@ -10,28 +9,46 @@ const EditDonationRequest = () => {
 
   const [request, setRequest] = useState(null);
 
-  // load single request
-  useEffect(() => {
-    axiosSecure.get(`/donation-requests/${id}`).then((res) => {
-      setRequest(res.data);
-    });
-  }, [id]);
+  const API_URL = import.meta.env.VITE_API_URL;
 
-  const handleUpdate = (e) => {
+  // ===== Load single request =====
+  useEffect(() => {
+    axios
+      .get(`${API_URL}/donation-requests/${id}`)
+      .then((res) => {
+        setRequest(res.data);
+      })
+      .catch((err) => console.error(err));
+  }, [id, API_URL]);
+
+  // ===== Update request =====
+  const handleUpdate = async (e) => {
     e.preventDefault();
 
-    axiosSecure
-      .patch(`/donation-requests/${id}`, {
-        donationDate: request.donationDate,
-        donationTime: request.donationTime,
-      })
-      .then(() => {
-        Swal.fire("Updated!", "Donation request updated.", "success");
-        navigate("/dashboard");
-      });
+    try {
+      await axios.patch(
+        `${API_URL}/donation-requests/${id}`,
+        {
+          donationDate: request.donationDate,
+          donationTime: request.donationTime,
+        }
+      );
+
+      Swal.fire(
+        "Updated!",
+        "Donation request updated.",
+        "success"
+      );
+      navigate("/dashboard");
+    } catch (err) {
+      console.error(err);
+      Swal.fire("Error", "Update failed", "error");
+    }
   };
 
-  if (!request) return <p>Loading...</p>;
+  if (!request) {
+    return <p className="text-center mt-10">Loading...</p>;
+  }
 
   return (
     <div className="max-w-xl mx-auto bg-white p-6 rounded shadow">

@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import axiosSecure from "../../api/axiosSecure";
-
+import axios from "axios";
 
 const AdminHome = () => {
   const [stats, setStats] = useState(null);
@@ -8,13 +7,18 @@ const AdminHome = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  
+  const BASE_URL = import.meta.env.VITE_API_URL;
+
   useEffect(() => {
     const loadData = async () => {
       try {
-        const statsRes = await axiosSecure.get("/admin/stats");
+        const statsRes = await axios.get(
+          `${BASE_URL}/admin/stats`
+        );
 
-        const fundRes = await axiosSecure.get(
-          "/fundings/total"
+        const fundRes = await axios.get(
+          `${BASE_URL}/fundings/total`
         );
 
         setStats(statsRes.data);

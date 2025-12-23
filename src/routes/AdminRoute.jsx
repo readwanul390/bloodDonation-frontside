@@ -12,28 +12,22 @@ const AdminRoute = ({ children }) => {
   const location = useLocation();
 
   useEffect(() => {
-    
     if (!user?.email) {
       setRoleLoading(false);
       return;
     }
 
-    const token = localStorage.getItem("access-token");
-
     axios
-      .get(`${API}/users/role/${user.email}`, {
-        headers: {
-          authorization: `Bearer ${token}`,
-        },
-      })
+      .get(`${API}/users/role/${user.email}`)
       .then((res) => {
         setIsAdmin(res.data.role === "admin");
         setRoleLoading(false);
       })
       .catch(() => {
+        setIsAdmin(false);
         setRoleLoading(false);
       });
-  }, [user]);
+  }, [user?.email]);
 
   if (loading || roleLoading) {
     return (
@@ -43,7 +37,6 @@ const AdminRoute = ({ children }) => {
     );
   }
 
- 
   if (!user || !isAdmin) {
     return (
       <Navigate

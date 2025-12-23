@@ -18,22 +18,17 @@ const VolunteerRoute = ({ children }) => {
       return;
     }
 
-    const token = localStorage.getItem("access-token");
-
     axios
-      .get(`${API}/users/role/${user.email}`, {
-        headers: {
-          authorization: `Bearer ${token}`,
-        },
-      })
+      .get(`${API}/users/role/${user.email}`)
       .then((res) => {
         setRole(res.data.role);
         setRoleLoading(false);
       })
       .catch(() => {
+        setRole(null);
         setRoleLoading(false);
       });
-  }, [user]);
+  }, [user?.email]);
 
   if (loading || roleLoading) {
     return (

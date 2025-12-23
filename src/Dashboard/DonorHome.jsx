@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { AuthContext } from "../providers/AuthProvider";
-import axiosSecure from "../api/axiosSecure";
+import axios from "axios";
 
 const DonorHome = () => {
   const { user } = useContext(AuthContext);
@@ -10,29 +10,43 @@ const DonorHome = () => {
 
   const [requests, setRequests] = useState([]);
 
+  const API_URL = import.meta.env.VITE_API_URL;
+
   // ===== Load max 3 recent donation requests =====
   useEffect(() => {
     if (!user?.email) return;
 
-    axiosSecure
-      .get(`/donation-requests/my/${user.email}?page=1&limit=3`)
+    axios
+      .get(
+        `${API_URL}/donation-requests/my/${user.email}`,
+        { params: { page: 1, limit: 3 } }
+      )
       .then((res) => {
         setRequests(res.data.requests || []);
-      });
-  }, [user?.email]);
+      })
+      .catch((err) => console.error(err));
+  }, [user?.email, API_URL]);
 
   // ===== Update status (done / canceled) =====
-  const updateStatus = (id, donationStatus) => {
-    axiosSecure
-      .patch(`/donation-requests/status/${id}`, { donationStatus })
-      .then(() => {
-        Swal.fire("Updated!", "Donation status updated.", "success");
+  const updateStatus = async (id, donationStatus) => {
+    try {
+      await axios.patch(
+        `${API_URL}/donation-requests/status/${id}`,
+        { donationStatus }
+      );
 
-        // reload
-        axiosSecure
-          .get(`/donation-requests/my/${user.email}?page=1&limit=3`)
-          .then((res) => setRequests(res.data.requests || []));
-      });
+      Swal.fire("Updated!", "Donation status updated.", "success");
+
+      const res = await axios.get(
+        `${API_URL}/donation-requests/my/${user.email}`,
+        { params: { page: 1, limit: 3 } }
+      );
+
+      setRequests(res.data.requests || []);
+    } catch (err) {
+      console.error(err);
+      Swal.fire("Error", "Failed to update status", "error");
+    }
   };
 
   // ===== Delete request =====
@@ -43,12 +57,21 @@ const DonorHome = () => {
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "Yes, delete it",
-    }).then((result) => {
+    }).then(async (result) => {
       if (result.isConfirmed) {
-        axiosSecure.delete(`/donation-requests/${id}`).then(() => {
+        try {
+          await axios.delete(
+            `${API_URL}/donation-requests/${id}`
+          );
+
           Swal.fire("Deleted!", "Request deleted.", "success");
-          setRequests(requests.filter((r) => r._id !== id));
-        });
+          setRequests(
+            requests.filter((r) => r._id !== id)
+          );
+        } catch (err) {
+          console.error(err);
+          Swal.fire("Error", "Delete failed", "error");
+        }
       }
     });
   };
@@ -67,7 +90,6 @@ const DonorHome = () => {
             Recent Donation Requests
           </h3>
 
-          {/* ===== TABLE ===== */}
           <div className="overflow-x-auto">
             <table className="table bg-white">
               <thead>
@@ -88,7 +110,8 @@ const DonorHome = () => {
                     <td>{req.recipientName}</td>
 
                     <td>
-                      {req.district}, {req.upazila}
+                      {req.recipientDistrict},{" "}
+                      {req.recipientUpazila}
                     </td>
 
                     <td>{req.donationDate}</td>
@@ -98,37 +121,37 @@ const DonorHome = () => {
                     <td className="capitalize">
                       {req.donationStatus}
 
-                      {/* Donor info when inprogress */}
                       {req.donationStatus === "inprogress" && (
                         <p className="text-xs text-gray-500">
-                          Donor: {req.donorName} ({req.donorEmail})
+                          Donor: {req.donorName} (
+                          {req.donorEmail})
                         </p>
                       )}
                     </td>
 
-                    {/* ===== ACTIONS ===== */}
                     <td className="space-x-1">
-                      {/* View */}
                       <button
                         onClick={() =>
-                          navigate(`/donation-request/${req._id}`)
+                          navigate(
+                            `/donation-request/${req._id}`
+                          )
                         }
                         className="btn btn-xs"
                       >
                         View
                       </button>
 
-                      {/* Edit */}
                       <button
                         onClick={() =>
-                          navigate(`/dashboard/edit-donation/${req._id}`)
+                          navigate(
+                            `/dashboard/edit-donation/${req._id}`
+                          )
                         }
                         className="btn btn-xs btn-info"
                       >
                         Edit
                       </button>
 
-                      {/* Done / Cancel ONLY when inprogress */}
                       {req.donationStatus === "inprogress" && (
                         <>
                           <button
@@ -142,7 +165,10 @@ const DonorHome = () => {
 
                           <button
                             onClick={() =>
-                              updateStatus(req._id, "canceled")
+                              updateStatus(
+                                req._id,
+                                "canceled"
+                              )
                             }
                             className="btn btn-xs btn-warning"
                           >
@@ -151,9 +177,10 @@ const DonorHome = () => {
                         </>
                       )}
 
-                      {/* Delete */}
                       <button
-                        onClick={() => deleteRequest(req._id)}
+                        onClick={() =>
+                          deleteRequest(req._id)
+                        }
                         className="btn btn-xs btn-error"
                       >
                         Delete
@@ -165,7 +192,6 @@ const DonorHome = () => {
             </table>
           </div>
 
-          {/* ===== View All Button ===== */}
           <div className="mt-6 text-center">
             <Link
               to="/dashboard/my-donation-requests"

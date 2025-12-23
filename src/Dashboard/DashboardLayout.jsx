@@ -1,31 +1,44 @@
 import { NavLink, Outlet } from "react-router-dom";
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../providers/AuthProvider";
-import axiosSecure from "../api/axiosSecure";
-
+import axios from "axios";
 
 const DashboardLayout = () => {
   const { user } = useContext(AuthContext);
   const [role, setRole] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const API_URL = import.meta.env.VITE_API_URL;
+
   useEffect(() => {
-    if (user?.email) {
-      axiosSecure
-        .get(`/users/role/${user.email}`)
-        .then((res) => {
-          setRole(res.data.role);
-          setLoading(false);
-        });
+    if (!user?.email) {
+      setLoading(false);
+      return;
     }
-  }, [user]);
+
+    axios
+      .get(`${API_URL}/users/role/${user.email}`)
+      .then((res) => {
+        setRole(res.data?.role);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setLoading(false);
+      });
+  }, [user?.email, API_URL]);
 
   if (loading) {
-    return <p className="text-center mt-10">Loading dashboard...</p>;
+    return (
+      <p className="text-center mt-10">
+        Loading dashboard...
+      </p>
+    );
   }
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-hscreen">
+      {/* ===== SIDEBAR ===== */}
       <aside className="w-64 bg-red-600 text-white p-5">
         <h2 className="text-xl font-bold mb-6">
           {role === "admin" && "Admin Dashboard"}
@@ -34,8 +47,6 @@ const DashboardLayout = () => {
         </h2>
 
         <nav className="flex flex-col gap-3">
-
-          
           {role === "donor" && (
             <>
               <NavLink to="/dashboard">Home</NavLink>
@@ -51,6 +62,7 @@ const DashboardLayout = () => {
               </NavLink>
             </>
           )}
+
           {role === "admin" && (
             <>
               <NavLink to="/dashboard/admin">Home</NavLink>
@@ -67,7 +79,9 @@ const DashboardLayout = () => {
 
           {role === "volunteer" && (
             <>
-              <NavLink to="/dashboard/volunteer/volunteer-home"> Home</NavLink>
+              <NavLink to="/dashboard/volunteer/volunteer-home">
+                Home
+              </NavLink>
               <NavLink to="/dashboard/profile">Profile</NavLink>
               <NavLink to="/dashboard/volunteer/all-blood-donation-request">
                 All Blood Donation Requests
@@ -79,6 +93,8 @@ const DashboardLayout = () => {
           )}
         </nav>
       </aside>
+
+      {/* ===== CONTENT ===== */}
       <main className="flex-1 p-6 bg-gray-100">
         <Outlet />
       </main>

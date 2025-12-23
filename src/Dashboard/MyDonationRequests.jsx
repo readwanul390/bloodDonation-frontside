@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../providers/AuthProvider";
-import axiosSecure from "../api/axiosSecure";
+import axios from "axios";
 
 const MyDonationRequests = () => {
   const { user } = useContext(AuthContext);
@@ -13,22 +13,33 @@ const MyDonationRequests = () => {
 
   const totalPages = Math.ceil(total / limit);
 
-  const loadRequests = () => {
+  const API_URL = import.meta.env.VITE_API_URL;
+
+  const loadRequests = async () => {
     if (!user?.email) return;
 
-    axiosSecure
-      .get(
-        `/donation-requests/my/${user.email}?status=${status}&page=${page}&limit=${limit}`
-      )
-      .then((res) => {
-        setRequests(res.data.requests || []);
-        setTotal(res.data.total || 0);
-      });
+    try {
+      const res = await axios.get(
+        `${API_URL}/donation-requests/my/${user.email}`,
+        {
+          params: {
+            status: status || undefined,
+            page,
+            limit,
+          },
+        }
+      );
+
+      setRequests(res.data.requests || []);
+      setTotal(res.data.total || 0);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   useEffect(() => {
     loadRequests();
-  }, [user?.email, status, page]);
+  }, [user?.email, status, page, API_URL]);
 
   return (
     <div className="p-6 bg-white rounded shadow">
@@ -82,7 +93,8 @@ const MyDonationRequests = () => {
                 <td>{req.recipientName}</td>
 
                 <td>
-                  {req.recipientDistrict || "—"}, {req.recipientUpazila || "—"}
+                  {req.recipientDistrict || "—"},{" "}
+                  {req.recipientUpazila || "—"}
                 </td>
 
                 <td>{req.donationDate}</td>

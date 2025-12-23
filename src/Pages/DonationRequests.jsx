@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axiosSecure from "../api/axiosSecure";
+import axios from "axios";
 
 const DonationRequests = () => {
   const [requests, setRequests] = useState([]);
@@ -12,9 +12,17 @@ const DonationRequests = () => {
 
   const navigate = useNavigate();
 
+  const API_URL = import.meta.env.VITE_API_URL;
+
   useEffect(() => {
-    axiosSecure
-      .get(`/donation-requests?status=pending&page=${page}&limit=${limit}`)
+    axios
+      .get(`${API_URL}/donation-requests`, {
+        params: {
+          status: "pending",
+          page,
+          limit,
+        },
+      })
       .then((res) => {
         setRequests(res.data.requests || []);
         setTotal(res.data.total || 0);
@@ -24,7 +32,7 @@ const DonationRequests = () => {
         setRequests([]);
         setTotal(0);
       });
-  }, [page]);
+  }, [page, API_URL]);
 
   const handleView = (id) => {
     navigate(`/donation-request/${id}`);
@@ -44,13 +52,17 @@ const DonationRequests = () => {
         <>
           <div className="grid md:grid-cols-3 gap-6">
             {requests.map((req) => (
-              <div key={req._id} className="card bg-white shadow p-4">
+              <div
+                key={req._id}
+                className="card bg-white shadow p-4"
+              >
                 <h3 className="text-xl font-semibold">
                   {req.recipientName}
                 </h3>
 
                 <p className="text-sm text-gray-600">
-                  📍 {req.recipientDistrict}, {req.recipientUpazila}
+                  📍 {req.recipientDistrict},{" "}
+                  {req.recipientUpazila}
                 </p>
 
                 <p className="mt-2">

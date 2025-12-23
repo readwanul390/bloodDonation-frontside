@@ -1,10 +1,6 @@
 import { useContext, useState } from "react";
 import { AuthContext } from "../providers/AuthProvider";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
-
-const API = import.meta.env.VITE_API_URL;
-
 
 const Login = () => {
   const { loginUser } = useContext(AuthContext);
@@ -20,14 +16,8 @@ const Login = () => {
     try {
       setLoading(true);
 
-      // 1️⃣ Firebase login
+      // 🔥 Firebase login ONLY (no JWT)
       await loginUser(email, password);
-
-      // 2️⃣ Get JWT from backend
-      const jwtRes = await axios.post(`${API}/jwt`, { email });
-
-      // 3️⃣ Save token
-      localStorage.setItem("access-token", jwtRes.data.token);
 
       alert("Login Successful!");
       navigate("/dashboard");
@@ -43,7 +33,9 @@ const Login = () => {
     <div className="min-h-screen flex justify-center items-center bg-base-200">
       <div className="card w-full max-w-md bg-base-100 shadow-xl">
         <div className="card-body">
-          <h2 className="text-2xl font-bold text-center">🔐 Login</h2>
+          <h2 className="text-2xl font-bold text-center">
+            🔐 Login
+          </h2>
 
           <form onSubmit={handleLogin} className="space-y-4">
             <input
@@ -74,7 +66,10 @@ const Login = () => {
 
           <p className="text-center text-sm mt-4">
             New here?{" "}
-            <Link to="/register" className="link link-primary">
+            <Link
+              to="/register"
+              className="link link-primary"
+            >
               Register
             </Link>
           </p>

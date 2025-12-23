@@ -15,36 +15,46 @@ const Search = () => {
   const [searched, setSearched] = useState(false);
 
   const handleDistrictChange = (e) => {
-    const API = import.meta.env.VITE_API_URL;
     const selectedDistrict = e.target.value;
     setDistrict(selectedDistrict);
     setUpazila("");
 
-    const foundDistrict = districts.find(d => d.name === selectedDistrict);
+    const foundDistrict = districts.find(
+      (d) => d.name === selectedDistrict
+    );
+
     if (foundDistrict) {
       const ups = upazilas.filter(
-        u => u.district_id === foundDistrict.id
+        (u) => u.district_id === foundDistrict.id
       );
       setFilteredUpazilas(ups);
+    } else {
+      setFilteredUpazilas([]);
     }
   };
 
   const handleSearch = async (e) => {
     e.preventDefault();
 
-    const res = await axios.get(
-      `${API}/search-donors`,
-      {
-        params: {
-          bloodGroup,
-          district,
-          upazila,
-        },
-      }
-    );
+    try {
+      const res = await axios.get(
+        `${API}/search-donors`,
+        {
+          params: {
+            bloodGroup,
+            district,
+            upazila,
+          },
+        }
+      );
 
-    setDonors(res.data);
-    setSearched(true);
+      setDonors(res.data || []);
+      setSearched(true);
+    } catch (err) {
+      console.error(err);
+      setDonors([]);
+      setSearched(true);
+    }
   };
 
   return (
@@ -53,26 +63,35 @@ const Search = () => {
         Search Blood Donors
       </h2>
 
-      <form onSubmit={handleSearch} className="grid grid-cols-4 gap-4 mb-8">
+      <form
+        onSubmit={handleSearch}
+        className="grid grid-cols-4 gap-4 mb-8"
+      >
         <select
           className="select select-bordered"
+          value={bloodGroup}
           onChange={(e) => setBloodGroup(e.target.value)}
           required
         >
           <option value="">Blood Group</option>
-          {bloodGroups.map(bg => (
-            <option key={bg} value={bg}>{bg}</option>
+          {bloodGroups.map((bg) => (
+            <option key={bg} value={bg}>
+              {bg}
+            </option>
           ))}
         </select>
 
         <select
           className="select select-bordered"
+          value={district}
           onChange={handleDistrictChange}
           required
         >
           <option value="">District</option>
-          {districts.map(d => (
-            <option key={d.id} value={d.name}>{d.name}</option>
+          {districts.map((d) => (
+            <option key={d.id} value={d.name}>
+              {d.name}
+            </option>
           ))}
         </select>
 
@@ -83,12 +102,16 @@ const Search = () => {
           required
         >
           <option value="">Upazila</option>
-          {filteredUpazilas.map(u => (
-            <option key={u.id} value={u.name}>{u.name}</option>
+          {filteredUpazilas.map((u) => (
+            <option key={u.id} value={u.name}>
+              {u.name}
+            </option>
           ))}
         </select>
 
-        <button className="btn bg-red-600 text-white">Search</button>
+        <button className="btn bg-red-600 text-white">
+          Search
+        </button>
       </form>
 
       {searched && donors.length === 0 && (
@@ -99,16 +122,22 @@ const Search = () => {
 
       {donors.length > 0 && (
         <div className="grid md:grid-cols-3 gap-4">
-          {donors.map(d => (
-            <div key={d._id} className="card bg-white shadow p-4">
+          {donors.map((d) => (
+            <div
+              key={d._id}
+              className="card bg-white shadow p-4"
+            >
               <img
                 src={d.avatar}
+                alt={d.name}
                 className="w-20 h-20 rounded-full mx-auto"
               />
               <h3 className="text-xl font-semibold text-center mt-2">
                 {d.name}
               </h3>
-              <p className="text-center">{d.bloodGroup}</p>
+              <p className="text-center">
+                {d.bloodGroup}
+              </p>
               <p className="text-center text-sm">
                 {d.district}, {d.upazila}
               </p>
