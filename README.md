@@ -5,8 +5,9 @@ The application allows donors, volunteers, and admins to manage blood donation r
 
 🚀 Live Demo
 
-👉 (Add your live frontend URL here if deployed)
-Example: https://blood-donation-frontend.vercel.app
+live link: https://blooddonationhridoy.netlify.app/
+
+backend : http://blooddonation-server-side-80.vercel.app
 
 🛠️ Technologies Used
 
