@@ -9,6 +9,11 @@ live link: https://blooddonationhridoy.netlify.app/
 
 backend : http://blooddonation-server-side-80.vercel.app
 
+## 🖼 Screenshot
+
+![bloodDonation Screenshot](./screenshot.png)
+
+
 🛠️ Technologies Used
 
 React (Vite)
@@ -133,7 +138,7 @@ VITE_FIREBASE_APP_ID=your_app_id
 
 ▶️ How to Run Locally
 # Clone repository
-git clone https://github.com/your-username/blood-donation-frontend.git
+git clone https://github.com/readwanul390/blood-donation-frontend.git
 
 # Go to project folder
 cd blood-donation-frontend
@@ -147,7 +152,7 @@ npm run dev
 🔗 Backend Repository
 
 👉 (Add backend GitHub link here)
-Example: https://github.com/your-username/blood-donation-backend
+ [https://github.com/readwanul390/blood-donation-backend](https://github.com/readwanul390/blooddonation75-server-side)
 
 📌 Key Features Implemented (Assignment Ready)
 
@@ -162,6 +167,17 @@ Example: https://github.com/your-username/blood-donation-backend
 ✅ Blocked user restriction
 
 ✅ Secure API calls with Axios interceptor
+
+## 📦 Dependencies
+- react
+- react-router-dom
+- axios
+- firebase
+- sweetalert2
+- jwt-decode
+- tailwindcss
+- daisyui
+
 
 🧪 Notes for Examiner
 
