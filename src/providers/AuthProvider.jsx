@@ -5,26 +5,25 @@ import {
   updateProfile,
   onAuthStateChanged,
   signOut,
+  GoogleAuthProvider,
+  signInWithPopup,
 } from "firebase/auth";
 import { auth } from "../firebase/firebase.config";
 
 export const AuthContext = createContext();
 
+const googleProvider = new GoogleAuthProvider();
+
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // 🔐 LOGIN (Firebase only)
-  const loginUser = async (email, password) => {
-    const result = await signInWithEmailAndPassword(
-      auth,
-      email,
-      password
-    );
-    return result;
+  // 🔐 LOGIN
+  const loginUser = (email, password) => {
+    return signInWithEmailAndPassword(auth, email, password);
   };
 
-  // 📝 REGISTER (Firebase only)
+  // 📝 REGISTER
   const registerUser = async (email, password, name, photoURL) => {
     const result = await createUserWithEmailAndPassword(
       auth,
@@ -40,29 +39,44 @@ const AuthProvider = ({ children }) => {
     return result;
   };
 
+  // 🔵 GOOGLE LOGIN
+  const googleLogin = async () => {
+    const result = await signInWithPopup(auth, googleProvider);
+    return result;
+  };
+
+  // 🎯 DEMO LOGIN
+  const demoLogin = () => {
+    return signInWithEmailAndPassword(
+      auth,
+      "demo@test.com",
+      "123456"
+    );
+  };
+
   // 🚪 LOGOUT
-  const logoutUser = async () => {
+  const logoutUser = () => {
     return signOut(auth);
   };
 
-  // 🔁 AUTH STATE OBSERVER
+  // 🔁 OBSERVER
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(
-      auth,
-      (currentUser) => {
-        setUser(currentUser);
-        setLoading(false);
-      }
-    );
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setLoading(false);
+    });
+
     return () => unsubscribe();
   }, []);
 
   const authInfo = {
     user,
+    loading,
     loginUser,
     registerUser,
+    googleLogin,
+    demoLogin,
     logoutUser,
-    loading,
   };
 
   return (

@@ -6,11 +6,12 @@ import axios from "axios";
 
 const CreateDonationRequest = () => {
   const { user } = useContext(AuthContext);
+  const API_URL = import.meta.env.VITE_API_URL;
 
   const [dbUser, setDbUser] = useState(null);
   const [filteredUpazilas, setFilteredUpazilas] = useState([]);
-
-  const API_URL = import.meta.env.VITE_API_URL;
+  const [imageFile, setImageFile] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     recipientName: "",
@@ -24,26 +25,21 @@ const CreateDonationRequest = () => {
     requestMessage: "",
   });
 
-  /* ===== Load DB user (status check) ===== */
   useEffect(() => {
     if (!user?.email) return;
-
     axios
       .get(`${API_URL}/users/role/${user.email}`)
-      .then((res) => setDbUser(res.data))
-      .catch(() => {});
-  }, [user?.email, API_URL]);
+      .then((res) => setDbUser(res.data));
+  }, [user, API_URL]);
 
-  /* ===== Blocked user ===== */
   if (dbUser?.status === "blocked") {
     return (
       <p className="text-red-600 font-semibold">
-        You are blocked. You cannot create donation requests.
+        You are blocked from creating donation requests.
       </p>
     );
   }
 
-  /* ===== Handle form change ===== */
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -51,176 +47,103 @@ const CreateDonationRequest = () => {
       let updated = { ...prev, [name]: value };
 
       if (name === "recipientDistrict") {
-        const selectedDistrict = districts.find(
-          (d) => d.id === value
-        );
+        const district = districts.find((d) => d.id === value);
+        const ups = upazilasData.filter((u) => u.district_id === value);
 
-        const filtered = upazilasData.filter(
-          (u) => u.district_id === value
-        );
-
-        setFilteredUpazilas(filtered);
-
-        updated = {
-          ...prev,
-          recipientDistrict: selectedDistrict?.name || "",
-          recipientUpazila: "",
-        };
+        setFilteredUpazilas(ups);
+        updated.recipientDistrict = district?.name || "";
+        updated.recipientUpazila = "";
       }
 
       return updated;
     });
   };
 
-  /* ===== Submit form ===== */
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const donationRequest = {
-      requesterName: user.displayName,
-      requesterEmail: user.email,
-      ...formData,
-    };
+    setLoading(true);
 
     try {
-      await axios.post(
-        `${API_URL}/donation-requests`,
-        donationRequest
-      );
+      let imageUrl = "";
+
+      if (imageFile) {
+        const imageData = new FormData();
+        imageData.append("image", imageFile);
+
+        const imgRes = await axios.post(
+          `https://api.imgbb.com/1/upload?key=${import.meta.env.VITE_IMGBB_KEY}`,
+          imageData
+        );
+
+        imageUrl = imgRes.data.data.url;
+      }
+
+      const payload = {
+        requesterName: user.displayName,
+        requesterEmail: user.email,
+        image: imageUrl,
+        ...formData,
+      };
+
+      await axios.post(`${API_URL}/donation-requests`, payload);
 
       alert("Donation request created successfully!");
 
-      setFormData({
-        recipientName: "",
-        recipientDistrict: "",
-        recipientUpazila: "",
-        hospitalName: "",
-        address: "",
-        bloodGroup: "",
-        donationDate: "",
-        donationTime: "",
-        requestMessage: "",
-      });
-
-      setFilteredUpazilas([]);
       e.target.reset();
+      setImageFile(null);
+      setFilteredUpazilas([]);
     } catch (err) {
       console.error(err);
       alert("Failed to create donation request");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="max-w-3xl bg-white p-6 rounded shadow">
-      <h2 className="text-xl font-bold mb-4">
-        Create Donation Request
-      </h2>
+      <h2 className="text-xl font-bold mb-4">Create Donation Request</h2>
 
       <form onSubmit={handleSubmit} className="grid gap-4">
-        <input
-          value={user.displayName}
-          disabled
-          className="input input-bordered bg-gray-100"
-        />
+        <input value={user.displayName} disabled className="input input-bordered" />
+        <input value={user.email} disabled className="input input-bordered" />
 
-        <input
-          value={user.email}
-          disabled
-          className="input input-bordered bg-gray-100"
-        />
+        <input name="recipientName" placeholder="Recipient Name" className="input input-bordered" onChange={handleChange} required />
 
-        <input
-          name="recipientName"
-          placeholder="Recipient Name"
-          className="input input-bordered"
-          onChange={handleChange}
-          required
-        />
-
-        <select
-          name="recipientDistrict"
-          className="select select-bordered"
-          onChange={handleChange}
-          required
-        >
+        <select name="recipientDistrict" className="select select-bordered" onChange={handleChange} required>
           <option value="">Select District</option>
           {districts.map((d) => (
-            <option key={d.id} value={d.id}>
-              {d.name}
-            </option>
+            <option key={d.id} value={d.id}>{d.name}</option>
           ))}
         </select>
 
-        <select
-          name="recipientUpazila"
-          className="select select-bordered"
-          onChange={handleChange}
-          required
-        >
+        <select name="recipientUpazila" className="select select-bordered" onChange={handleChange} required>
           <option value="">Select Upazila</option>
           {filteredUpazilas.map((u) => (
-            <option key={u.id} value={u.name}>
-              {u.name}
-            </option>
+            <option key={u.id} value={u.name}>{u.name}</option>
           ))}
         </select>
 
-        <input
-          name="hospitalName"
-          placeholder="Hospital Name"
-          className="input input-bordered"
-          onChange={handleChange}
-          required
-        />
+        <input name="hospitalName" placeholder="Hospital Name" className="input input-bordered" onChange={handleChange} required />
+        <input name="address" placeholder="Address" className="input input-bordered" onChange={handleChange} required />
 
-        <input
-          name="address"
-          placeholder="Full Address"
-          className="input input-bordered"
-          onChange={handleChange}
-          required
-        />
-
-        <select
-          name="bloodGroup"
-          className="select select-bordered"
-          onChange={handleChange}
-          required
-        >
+        <select name="bloodGroup" className="select select-bordered" onChange={handleChange} required>
           <option value="">Blood Group</option>
           {["A+","A-","B+","B-","AB+","AB-","O+","O-"].map((bg) => (
-            <option key={bg} value={bg}>
-              {bg}
-            </option>
+            <option key={bg} value={bg}>{bg}</option>
           ))}
         </select>
 
-        <input
-          type="date"
-          name="donationDate"
-          className="input input-bordered"
-          onChange={handleChange}
-          required
-        />
+        <input type="date" name="donationDate" className="input input-bordered" onChange={handleChange} required />
+        <input type="time" name="donationTime" className="input input-bordered" onChange={handleChange} required />
 
-        <input
-          type="time"
-          name="donationTime"
-          className="input input-bordered"
-          onChange={handleChange}
-          required
-        />
+        <textarea name="requestMessage" placeholder="Why blood is needed?" className="textarea textarea-bordered" onChange={handleChange} required />
 
-        <textarea
-          name="requestMessage"
-          placeholder="Why blood is needed?"
-          className="textarea textarea-bordered"
-          onChange={handleChange}
-          required
-        />
+        {/* IMAGE UPLOAD */}
+        <input type="file" accept="image/*" className="file-input file-input-bordered" onChange={(e) => setImageFile(e.target.files[0])} required />
 
-        <button className="btn btn-primary">
-          Create Request
+        <button className="btn btn-primary" disabled={loading}>
+          {loading ? "Uploading..." : "Create Request"}
         </button>
       </form>
     </div>

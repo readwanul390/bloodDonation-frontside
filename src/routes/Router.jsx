@@ -25,6 +25,11 @@ import DonationRequests from "../Pages/DonationRequests";
 import Funding from "../Pages/Funding";
 import VolunteerHome from "../Dashboard/volunteer/Volunteer_Home";
 import EditDonationRequest from "../Dashboard/EditDonationRequest";
+import About from "../Pages/About";
+import Contact from "../Pages/Contact";
+import Blog from "../Pages/Blog";
+import Help from "../Pages/Help";
+import Privacy from "../Pages/Privacy";
 
 
 
@@ -36,6 +41,12 @@ const Router = createBrowserRouter([
       { index: true, element: <Home /> },
       { path: "register", element: <Register /> },
       { path: "login", element: <Login /> },
+      { path: "about", element: <About /> },
+    { path: "contact", element: <Contact /> },
+    { path: "blog", element: <Blog /> },
+    { path: "help", element: <Help /> },
+    { path: "privacy", element: <Privacy /> },
+      
     ],
   },
 

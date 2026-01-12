@@ -18,7 +18,6 @@ const Register = () => {
     avatar: null,
     bloodGroup: "",
     districtId: "",
-    upazila: "",
     password: "",
     confirmPassword: "",
   });
@@ -45,7 +44,7 @@ const Register = () => {
     });
   };
 
-  // 🖼️ imgBB upload
+  
   const uploadImage = async (image) => {
     if (!image) return "";
 
@@ -60,7 +59,7 @@ const Register = () => {
     return res.data.data.display_url;
   };
 
-  // 🚀 submit
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
 

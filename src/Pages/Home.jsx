@@ -5,13 +5,14 @@ const Home = () => {
 
   return (
     <div>
-      {/* ===== BANNER ===== */}
+
+      {/* ===== 1. HERO / BANNER ===== */}
       <section className="bg-red-50 py-20 text-center">
         <h1 className="text-4xl font-bold mb-4 text-red-600">
           Donate Blood, Save Lives
         </h1>
         <p className="mb-6 text-gray-600">
-          Join our community and help people in need
+          A trusted platform connecting blood donors with patients in need
         </p>
 
         <div className="flex justify-center gap-4">
@@ -31,69 +32,98 @@ const Home = () => {
         </div>
       </section>
 
-      {/* ===== FEATURED SECTION ===== */}
-      <section className="py-16 px-6">
-        <h2 className="text-3xl font-bold text-center mb-10">
-          Why BloodCare?
-        </h2>
+      {/* ===== 2. ABOUT BLOODCARE ===== */}
+      <section className="py-16 px-6 text-center max-w-5xl mx-auto">
+        <h2 className="text-3xl font-bold mb-4">About BloodCare</h2>
+        <p className="text-gray-600">
+          BloodCare is a community-driven blood donation platform designed to
+          connect verified donors with patients quickly and safely.
+        </p>
+      </section>
 
-        <div className="grid md:grid-cols-3 gap-6">
-          <div className="card bg-base-100 shadow p-6">
-            <h3 className="font-semibold mb-2">Verified Donors</h3>
-            <p className="text-sm text-gray-600">
-              All donors are verified to ensure safety and reliability.
-            </p>
-          </div>
+      {/* ===== 3. WHY BLOODCARE ===== */}
+      <section className="py-16 px-6 bg-gray-50">
+        <h2 className="text-3xl font-bold text-center mb-10">Why Choose Us?</h2>
 
-          <div className="card bg-base-100 shadow p-6">
-            <h3 className="font-semibold mb-2">Quick Requests</h3>
-            <p className="text-sm text-gray-600">
-              Create blood donation requests in just a few steps.
-            </p>
-          </div>
-
-          <div className="card bg-base-100 shadow p-6">
-            <h3 className="font-semibold mb-2">Community Support</h3>
-            <p className="text-sm text-gray-600">
-              Volunteers and donors work together to save lives.
-            </p>
-          </div>
+        <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          <div className="card bg-white shadow p-6">Verified Donors</div>
+          <div className="card bg-white shadow p-6">Fast Requests</div>
+          <div className="card bg-white shadow p-6">Community Support</div>
         </div>
       </section>
 
-      {/* ===== CONTACT US ===== */}
-      <section className="bg-gray-100 py-16 px-6">
-        <h2 className="text-3xl font-bold text-center mb-6">
-          Contact Us
-        </h2>
-
-        <div className="max-w-xl mx-auto bg-white p-6 shadow rounded">
-          <form className="space-y-4">
-            <input
-              type="text"
-              placeholder="Your Name"
-              className="input input-bordered w-full"
-            />
-            <input
-              type="email"
-              placeholder="Your Email"
-              className="input input-bordered w-full"
-            />
-            <textarea
-              placeholder="Message"
-              className="textarea textarea-bordered w-full"
-            ></textarea>
-
-            <button className="btn btn-error w-full text-white">
-              Send Message
-            </button>
-          </form>
-
-          <p className="text-center mt-4 text-gray-600">
-            📞 Contact Number: <strong>01777-123456</strong>
-          </p>
+      {/* ===== 4. HOW IT WORKS ===== */}
+      <section className="py-16 px-6 text-center">
+        <h2 className="text-3xl font-bold mb-8">How It Works</h2>
+        <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          <div className="card shadow p-6">Register as Donor</div>
+          <div className="card shadow p-6">Create Request</div>
+          <div className="card shadow p-6">Get Help Fast</div>
         </div>
       </section>
+
+      {/* ===== 5. BLOOD GROUPS ===== */}
+      <section className="py-16 px-6 bg-gray-100 text-center">
+        <h2 className="text-3xl font-bold mb-8">Available Blood Groups</h2>
+        <div className="flex flex-wrap justify-center gap-4">
+          {["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"].map(group => (
+            <span key={group} className="badge badge-error badge-lg">{group}</span>
+          ))}
+        </div>
+      </section>
+
+      {/* ===== 6. EMERGENCY REQUESTS ===== */}
+      <section className="py-16 px-6 text-center">
+        <h2 className="text-3xl font-bold mb-4">Emergency Requests</h2>
+        <p className="text-gray-600">
+          Urgent blood donation requests are prioritized for faster response.
+        </p>
+      </section>
+
+      {/* ===== 7. BLOG HIGHLIGHTS ===== */}
+      <section className="py-16 px-6 bg-gray-50">
+        <h2 className="text-3xl font-bold text-center mb-10">Latest Blogs</h2>
+        <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          <div className="card shadow p-6">Why Blood Donation Matters</div>
+          <div className="card shadow p-6">Who Can Donate Blood?</div>
+          <div className="card shadow p-6">Donation Myths</div>
+        </div>
+      </section>
+
+      {/* ===== 8. TESTIMONIALS ===== */}
+      <section className="py-16 px-6 text-center">
+        <h2 className="text-3xl font-bold mb-6">What People Say</h2>
+        <p className="text-gray-600 max-w-2xl mx-auto">
+          “BloodCare helped me find a donor within hours. Truly life-saving!”
+        </p>
+      </section>
+
+      {/* ===== 9. HELP & SUPPORT ===== */}
+      <section className="py-16 px-6 bg-gray-100">
+        <h2 className="text-3xl font-bold text-center mb-6">Help & Support</h2>
+        <ul className="max-w-xl mx-auto text-gray-600 space-y-2">
+          <li>✔ How to register</li>
+          <li>✔ How to request blood</li>
+          <li>✔ Account & profile help</li>
+        </ul>
+      </section>
+
+      {/* ===== 10. CONTACT / CTA ===== */}
+      <section className="py-20 px-6 bg-red-600 text-white text-center">
+        <h2 className="text-3xl font-bold mb-4">
+          Ready to Save a Life?
+        </h2>
+        <p className="mb-6">
+          Contact us or register today to become a blood donor.
+        </p>
+        <button
+          className="btn btn-outline text-white"
+          onClick={() => navigate("/register")}
+        >
+          Get Started
+        </button>
+      </section>
+
     </div>
   );
 };

@@ -1,29 +1,50 @@
 import { useContext, useState } from "react";
-import { AuthContext } from "../providers/AuthProvider";
 import { Link, useNavigate } from "react-router-dom";
+import { AuthContext } from "../providers/AuthProvider";
+import { FcGoogle } from "react-icons/fc";
 
 const Login = () => {
-  const { loginUser } = useContext(AuthContext);
+  const { loginUser, googleLogin } = useContext(AuthContext);
   const navigate = useNavigate();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const email = e.target.email.value;
-    const password = e.target.password.value;
+    if (!email || !password) {
+      setError("Email and password are required");
+      return;
+    }
 
     try {
       setLoading(true);
-
-      // 🔥 Firebase login ONLY (no JWT)
       await loginUser(email, password);
-
-      alert("Login Successful!");
       navigate("/dashboard");
+    } catch {
+      setError("Invalid email or password");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    } catch (error) {
-      alert(error.message || "Login failed");
+  // ✅ AUTO-FILL DEMO CREDENTIALS
+  const handleDemoFill = () => {
+    setEmail("said@gmail.com");
+    setPassword("123456");
+    setError("");
+  };
+
+  const handleGoogle = async () => {
+    try {
+      setLoading(true);
+      await googleLogin();
+      navigate("/dashboard");
+    } catch {
+      setError("Google login failed");
     } finally {
       setLoading(false);
     }
@@ -31,45 +52,57 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex justify-center items-center bg-base-200">
-      <div className="card w-full max-w-md bg-base-100 shadow-xl">
+      <div className="card w-full max-w-md shadow-xl bg-base-100">
         <div className="card-body">
-          <h2 className="text-2xl font-bold text-center">
-            🔐 Login
-          </h2>
+          <h2 className="text-2xl font-bold text-center">🔐 Login</h2>
 
-          <form onSubmit={handleLogin} className="space-y-4">
+          {error && (
+            <p className="text-red-500 text-center text-sm">{error}</p>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-3 mt-3">
             <input
               type="email"
-              name="email"
-              required
               placeholder="Email"
-              autoComplete="off"
               className="input input-bordered w-full"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
 
             <input
               type="password"
-              name="password"
-              required
               placeholder="Password"
-              autoComplete="new-password"
               className="input input-bordered w-full"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
             />
 
-            <button
-              className="btn btn-primary w-full"
-              disabled={loading}
-            >
-              {loading ? "Logging in..." : "Login"}
+            <button className="btn btn-primary w-full">
+              Login
             </button>
           </form>
 
+          {/* ✅ DEMO AUTO-FILL BUTTON */}
+          <button
+            onClick={handleDemoFill}
+            className="btn btn-outline w-full mt-2"
+          >
+            🎯 Demo Login (Auto-Fill)
+          </button>
+
+          <div className="divider">OR</div>
+
+          <button
+            onClick={handleGoogle}
+            className="btn btn-outline w-full flex gap-2"
+          >
+            <FcGoogle size={20} />
+            Continue with Google
+          </button>
+
           <p className="text-center text-sm mt-4">
-            New here?{" "}
-            <Link
-              to="/register"
-              className="link link-primary"
-            >
+            New user?{" "}
+            <Link to="/register" className="link link-primary">
               Register
             </Link>
           </p>
