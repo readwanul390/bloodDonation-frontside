@@ -62,10 +62,7 @@ const Contact = () => {
           </button>
         </form>
 
-        <p className="text-center mt-6 text-gray-600">
-          📞 Phone: 01770-396544 <br />
-          📧 Email: abusaidhridoy5@gmail.com
-        </p>
+       
       </div>
     </div>
   );
